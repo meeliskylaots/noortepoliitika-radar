@@ -324,6 +324,11 @@
                     const audienceStr = row[keyAudience] || 'Määramata';
                     const toneStr = row[keyTone] || 'Neutraalne';
 
+                    // UUS: Otsime andmetest lingi välja (kasutab veergu 'link' või 'url')
+                    const articleLink = row.link || row.url || '#';
+                    const linkTarget = articleLink !== '#' ? 'target="_blank"' : '';
+                    const linkIcon = articleLink !== '#' ? '<i class="fas fa-external-link-alt text-[10px] ml-1 text-blue-400"></i>' : '';
+
                     tableHTML += `
                         <tr class="hover:bg-gray-50 transition duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -331,7 +336,10 @@
                                 <div class="text-xs text-gray-500 mt-0.5">${dateStr || '-'}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900 font-medium leading-snug">${row.title}</div>
+                                <!-- UUS: Pealkiri on nüüd klikitav link -->
+                                <a href="${articleLink}" ${linkTarget} class="text-sm text-blue-700 hover:text-blue-900 hover:underline font-medium leading-snug flex items-start gap-1 transition-colors">
+                                    <span>${row.title}</span> ${linkIcon}
+                                </a>
                                 <div class="text-xs text-gray-400 mt-1.5 flex gap-2">
                                     <span class="bg-gray-100 px-2 py-0.5 rounded">Siht: ${audienceStr}</span> 
                                     <span class="bg-gray-100 px-2 py-0.5 rounded">Toon: ${toneStr}</span>
@@ -455,10 +463,10 @@
         // Fallback andmed, kui API peaks ebaõnnestuma
         function getMockData() {
             return [
-                { date: "2026-07-01", source: "Harno", title: "Rakenduskõrghariduse seaduse muutmise eelnõu väljatöötamiskavatsus", institutionality: 90, human_centric: 10, risk: "high", rewrite: "Kuidas uued seadused muudavad noorte kutseõpet tulevikus?", audience: "ametnikud", tone: "bürokraatlik" },
-                { date: "2026-07-01", source: "ERR", title: "Ministeerium plaanib tõsta valdkondlikku toetust", institutionality: 70, human_centric: 40, risk: "medium", rewrite: "Noorte huviharidus saab lisaraha: Mida see Sinu kodukohas muudab?", audience: "üldsus", tone: "neutraalne" },
-                { date: "2026-07-02", source: "Teeviit", title: "Kuidas leida suveks esimene töökoht?", institutionality: 20, human_centric: 95, risk: "low", rewrite: "-", audience: "noored", tone: "toetav" },
-                { date: "2026-07-02", source: "Euroopa Noored", title: "Institutsionaalne arenguprogramm noorteorganisatsioonidele", institutionality: 85, human_centric: 30, risk: "medium", rewrite: "Tugi noorteorganisatsioonidele: Kuidas kirjutada edukas projekt?", audience: "noorsootöötajad", tone: "ametlik" }
+                { date: "2026-07-01", source: "Harno", title: "Rakenduskõrghariduse seaduse muutmise eelnõu väljatöötamiskavatsus", institutionality: 90, human_centric: 10, risk: "high", rewrite: "Kuidas uued seadused muudavad noorte kutseõpet tulevikus?", audience: "ametnikud", tone: "bürokraatlik", link: "https://harno.ee" },
+                { date: "2026-07-01", source: "ERR", title: "Ministeerium plaanib tõsta valdkondlikku toetust", institutionality: 70, human_centric: 40, risk: "medium", rewrite: "Noorte huviharidus saab lisaraha: Mida see Sinu kodukohas muudab?", audience: "üldsus", tone: "neutraalne", link: "https://err.ee" },
+                { date: "2026-07-02", source: "Teeviit", title: "Kuidas leida suveks esimene töökoht?", institutionality: 20, human_centric: 95, risk: "low", rewrite: "-", audience: "noored", tone: "toetav", link: "https://teeviit.ee" },
+                { date: "2026-07-02", source: "Euroopa Noored", title: "Institutsionaalne arenguprogramm noorteorganisatsioonidele", institutionality: 85, human_centric: 30, risk: "medium", rewrite: "Tugi noorteorganisatsioonidele: Kuidas kirjutada edukas projekt?", audience: "noorsootöötajad", tone: "ametlik", link: "https://euroopanoored.eu" }
             ];
         }
     </script>

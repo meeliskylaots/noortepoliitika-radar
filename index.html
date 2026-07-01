@@ -89,17 +89,23 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-6">
-                    <h3 class="text-lg font-bold mb-4">Viimased sekkumist vajavad tekstid</h3>
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead>
-                            <tr>
-                                <th class="text-left text-xs font-bold text-gray-500 uppercase py-2">Pealkiri</th>
-                                <th class="text-left text-xs font-bold text-gray-500 uppercase py-2">AI Tõlge</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body" class="divide-y divide-gray-100"></tbody>
-                    </table>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-bold mb-4">Skooride jaotus</h3>
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-bold mb-4">Viimased sekkumist vajavad tekstid</h3>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="text-left text-xs font-bold text-gray-500 uppercase py-2">Pealkiri</th>
+                                    <th class="text-left text-xs font-bold text-gray-500 uppercase py-2">AI Tõlge</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -107,6 +113,7 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxic9F7g8jwAgWnEMfg43KrHQGtsqltMWcrvg8icnT-FmQfzYJ_wXnv81Vq5hP6_GE_KQ/exec";
+        let radarChart = null;
 
         async function fetchData() {
             document.getElementById('loading').classList.remove('hidden');
@@ -130,8 +137,14 @@
                 sums.loimitus += Number(row.loimitus) || 0;
                 sums.tegevusele_suunatus += Number(row.tegevusele_suunatus) || 0;
 
+                // Eeldatud andmeväljad: row.title, row.link, row.date, row.tolge
                 tableHTML += `<tr>
-                    <td class="py-4 text-sm font-medium">${row.title || 'Pealkiri puudub'}</td>
+                    <td class="py-4 text-sm font-medium">
+                        <a href="${row.link || '#'}" target="_blank" class="text-blue-700 hover:underline">
+                            ${row.title || 'Pealkiri puudub'}
+                        </a>
+                        <div class="text-[10px] text-gray-400">${row.date || 'Kuupäev puudub'}</div>
+                    </td>
                     <td class="py-4 text-sm text-gray-600 italic">"${row.tolge || '-'}"</td>
                 </tr>`;
             });
@@ -143,6 +156,30 @@
             document.getElementById('score-tegev').innerText = Math.round(sums.tegevusele_suunatus / count);
             
             document.getElementById('table-body').innerHTML = tableHTML;
+
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if (radarChart) radarChart.destroy();
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Inimkesksus', 'Elulisus', 'Arusaadavus', 'Lõimitus', 'Tegevus'],
+                    datasets: [{
+                        label: 'Keskmine skoor',
+                        data: [
+                            sums.inimkesksus / count,
+                            sums.elulisus / count,
+                            sums.arusaadavus / count,
+                            sums.loimitus / count,
+                            sums.tegevusele_suunatus / count
+                        ],
+                        backgroundColor: 'rgba(30, 58, 138, 0.2)',
+                        borderColor: '#1e3a8a',
+                        borderWidth: 2
+                    }]
+                },
+                options: { scales: { r: { min: 0, max: 10 } } }
+            });
+
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('view-peavaade').classList.remove('hidden');
         }

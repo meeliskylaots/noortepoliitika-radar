@@ -99,7 +99,7 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead>
                                 <tr>
-                                    <th class="text-left text-xs font-bold text-gray-500 uppercase py-2">Pealkiri</th>
+                                    <th class="text-left text-xs font-bold text-gray-500 uppercase py-2">Allikas & Pealkiri</th>
                                     <th class="text-left text-xs font-bold text-gray-500 uppercase py-2">AI Tõlge</th>
                                 </tr>
                             </thead>
@@ -137,13 +137,23 @@
                 sums.loimitus += Number(row.loimitus) || 0;
                 sums.tegevusele_suunatus += Number(row.tegevusele_suunatus) || 0;
 
-                // Eeldatud andmeväljad: row.title, row.link, row.date, row.tolge
+                // Võtame lingi veerust 'url' või 'link' (oleneb kuidas Google Sheets need välja annab)
+                const articleUrl = row.url || row.link || '#';
+                
+                // Vormindame kuupäeva arusaadavaks, nt 01.07.2026
+                const dateStr = row.date ? new Date(row.date).toLocaleDateString('et-EE') : 'Kuupäev puudub';
+                const source = row.source || 'Teadmata allikas';
+
                 tableHTML += `<tr>
                     <td class="py-4 text-sm font-medium">
-                        <a href="${row.link || '#'}" target="_blank" class="text-blue-700 hover:underline">
+                        <a href="${articleUrl}" target="_blank" class="text-blue-700 hover:text-blue-900 transition-colors">
                             ${row.title || 'Pealkiri puudub'}
                         </a>
-                        <div class="text-[10px] text-gray-400">${row.date || 'Kuupäev puudub'}</div>
+                        <div class="text-[11px] text-gray-500 mt-1 flex items-center">
+                            <i class="fas fa-building mr-1.5"></i> ${source} 
+                            <span class="mx-2 text-gray-300">|</span>
+                            <i class="far fa-clock mr-1.5"></i> ${dateStr}
+                        </div>
                     </td>
                     <td class="py-4 text-sm text-gray-600 italic">"${row.tolge || '-'}"</td>
                 </tr>`;

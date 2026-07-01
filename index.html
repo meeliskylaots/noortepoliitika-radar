@@ -4,16 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Peaeksperdi Radar | HTM</title>
-    <!-- Tailwind CSS disaini jaoks -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js graafikute jaoks -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .sidebar-link.active { background-color: rgba(255, 255, 255, 0.1); border-left: 4px solid #3b82f6; font-weight: 600; }
         .sidebar-link { border-left: 4px solid transparent; }
-        /* Laadimisanimatsioon */
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -26,22 +23,17 @@
             <h1 class="text-2xl font-bold tracking-tight text-white">RADAR</h1>
             <p class="text-xs text-slate-400 mt-1 uppercase tracking-wider">Lõimitud Noortepoliitika</p>
         </div>
-        
         <nav class="flex-1 mt-6">
-            <a href="#" id="nav-peavaade" onclick="switchView('peavaade')" class="sidebar-link active flex items-center px-6 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <a href="#" onclick="switchView('peavaade')" class="sidebar-link active flex items-center px-6 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800">
                 Peavaade
             </a>
-            <a href="#" id="nav-ohumargid" onclick="switchView('ohumargid')" class="sidebar-link flex items-center px-6 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <a href="#" onclick="switchView('ohumargid')" class="sidebar-link flex items-center px-6 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800">
                 Ohumärgid
             </a>
-            <a href="#" id="nav-seaded" onclick="switchView('seaded')" class="sidebar-link flex items-center px-6 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <a href="#" onclick="switchView('seaded')" class="sidebar-link flex items-center px-6 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800">
                 Seaded
             </a>
         </nav>
-        
         <div class="p-6 border-t border-slate-800">
             <p class="text-xs text-slate-500">Peaeksperdi Töölaud v2.0</p>
         </div>
@@ -49,112 +41,223 @@
 
     <!-- PEAMINE SISU -->
     <main class="flex-1 flex flex-col h-screen overflow-y-auto">
-        <!-- Ülemine riba -->
+        <!-- PÄIS -->
         <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
-            <h2 class="text-xl font-semibold text-slate-800" id="header-title">Kommunikatsiooni Tervis & Sekkumised</h2>
+            <h2 class="text-xl font-semibold text-slate-800">Kommunikatsiooni Tervis & Sekkumised</h2>
             <div class="flex items-center space-x-4">
                 <span id="loading-indicator" class="flex items-center text-sm text-slate-500 hidden">
-                    <div class="loader mr-2"></div> Andmete värskendamine...
+                    <div class="loader mr-2"></div> Uuendan...
                 </span>
-                <button onclick="fetchData()" class="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-4 rounded-md transition-colors flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <button onclick="fetchData()" class="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-4 rounded-md flex items-center">
                     Uuenda
                 </button>
-                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-sm">
-                    MK
-                </div>
+                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-sm">MK</div>
             </div>
         </header>
 
         <div class="p-8">
-            <!-- ALOADIMISE EKRAAN -->
+            <!-- LAADIMISE EKRAAN -->
             <div id="initial-loader" class="flex flex-col items-center justify-center py-20">
                 <div class="loader mb-4" style="width: 40px; height: 40px; border-width: 4px;"></div>
                 <p class="text-slate-500">Laen radari andmeid...</p>
             </div>
 
-            <!-- VAADE: PEAVAADE -->
+            <!-- PEAVAADE -->
             <div id="view-peavaade" class="hidden space-y-6">
-                
-                <!-- Ülemised mõõdikud -->
+                <!-- KPI-d -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center border-l-4 border-l-orange-400">
-                        <div class="p-3 bg-orange-50 rounded-lg text-orange-500 mr-5">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">Arusaadavus (Bürokraatia vaba)</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-1" id="kpi-arusaadavus">--</h3>
-                        </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 border-l-4 border-l-orange-400">
+                        <p class="text-sm font-medium text-slate-500 uppercase">Arusaadavus (bürokraatiavaba)</p>
+                        <h3 class="text-3xl font-bold text-slate-800 mt-1" id="kpi-arusaadavus">--</h3>
                     </div>
-                    
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center border-l-4 border-l-emerald-500">
-                        <div class="p-3 bg-emerald-50 rounded-lg text-emerald-500 mr-5">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">Keskmine Inimkesksus</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-1" id="kpi-inimkesksus">--</h3>
-                        </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 border-l-4 border-l-emerald-500">
+                        <p class="text-sm font-medium text-slate-500 uppercase">Keskmine Inimkesksus</p>
+                        <h3 class="text-3xl font-bold text-slate-800 mt-1" id="kpi-inimkesksus">--</h3>
                     </div>
-
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center border-l-4 border-l-rose-500">
-                        <div class="p-3 bg-rose-50 rounded-lg text-rose-500 mr-5">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">Sekkumist vajavad tekstid</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-1" id="kpi-sekkumised">--</h3>
-                        </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 border-l-4 border-l-rose-500">
+                        <p class="text-sm font-medium text-slate-500 uppercase">Riskantsed tekstid</p>
+                        <h3 class="text-3xl font-bold text-slate-800 mt-1" id="kpi-sekkumised">--</h3>
                     </div>
                 </div>
 
-                <!-- Graafikute sektsioon (2 tulpa) -->
+                <!-- Graafikud -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <!-- Trendigraafik -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Kommunikatsiooni dünaamika ajas</h3>
-                        <div class="relative h-64 w-full">
-                            <canvas id="trendChart"></canvas>
-                        </div>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Dünaamika ajas</h3>
+                        <div class="relative h-64 w-full"><canvas id="trendChart"></canvas></div>
                     </div>
-
-                    <!-- UUS: Lõimituse Ämblikuvõrk -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
                         <h3 class="text-lg font-semibold text-slate-800 mb-1">Lõimituse ja kvaliteedi tasakaal</h3>
-                        <p class="text-xs text-slate-500 mb-4">Viimase 10 analüüsitud sõnumi keskmised (skaala 1-10)</p>
-                        <div class="relative h-64 w-full">
-                            <canvas id="radarChart"></canvas>
-                        </div>
+                        <p class="text-xs text-slate-500 mb-4">Viimase 10 sõnumi keskmised näitajad (1-10)</p>
+                        <div class="relative h-64 w-full"><canvas id="radarChart"></canvas></div>
                     </div>
                 </div>
 
-                <!-- Andmetabel: Sekkumised -->
+                <!-- Tabel -->
                 <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
                         <h3 class="text-lg font-semibold text-slate-800">Radari Hoiatused: Vaja "inimese keelde" tõlkida</h3>
-                        <span class="bg-rose-100 text-rose-700 text-xs px-3 py-1 rounded-full font-medium">Näitab ainult riskantseid sõnumeid</span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
                                 <tr>
                                     <th class="px-6 py-4">Allikas & Kuupäev</th>
-                                    <th class="px-6 py-4">Asutuse pealkiri (Katkestus)</th>
-                                    <th class="px-6 py-4">AI Soovitus (Inimkeel)</th>
-                                    <th class="px-6 py-4 text-center">Skoor (A / I)</th>
+                                    <th class="px-6 py-4">Originaal pealkiri</th>
+                                    <th class="px-6 py-4">AI Inimkeelne soovitus</th>
                                 </tr>
                             </thead>
-                            <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700">
-                                <!-- Read tekivad siia JS kaudu -->
-                            </tbody>
+                            <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- VAADE: OHUMÄRGID -->
+            <!-- OHUMÄRGID (Tühi) -->
             <div id="view-ohumargid" class="hidden">
                 <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-100 text-center">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 text-orange-500 mb-4">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeNormally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+                    <h3 class="text-xl font-semibold text-slate-800">Ohumärkide ülevaade</h3>
+                    <p class="text-slate-500 mt-2">Siia saad tulevikus ehitada detailsema vaate probleemsete asutuste lõikes.</p>
+                </div>
+            </div>
+
+            <!-- SEADED (Tühi) -->
+            <div id="view-seaded" class="hidden">
+                <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-100 text-center">
+                    <h3 class="text-xl font-semibold text-slate-800">Süsteemi seaded</h3>
+                    <p class="text-slate-500 mt-2">Mudelite tuunimine ja ühenduste haldus.</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Sinu Google Apps Script API URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbxic9F7g8jwAgWnEMfg43KrHQGtsqltMWcrvg8icnT-FmQfzYJ_wXnv81Vq5hP6_GE_KQ/exec";
+
+        let trendChartInstance = null;
+        let radarChartInstance = null;
+
+        // Vaadete vahetamine
+        function switchView(viewName) {
+            document.querySelectorAll('nav a').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            ['peavaade', 'ohumargid', 'seaded'].forEach(v => {
+                document.getElementById('view-' + v).classList.add('hidden');
+            });
+            document.getElementById('view-' + viewName).classList.remove('hidden');
+        }
+
+        // Andmete pärimine
+        async function fetchData() {
+            document.getElementById('loading-indicator').classList.remove('hidden');
+            
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                renderDashboard(data);
+            } catch (error) {
+                console.error("Viga andmete laadimisel:", error);
+                alert("Ei saanud Sheetsist andmeid kätte. Kontrolli API linki.");
+            } finally {
+                document.getElementById('loading-indicator').classList.add('hidden');
+                document.getElementById('initial-loader').classList.add('hidden');
+                document.getElementById('view-peavaade').classList.remove('hidden');
+            }
+        }
+
+        // Töölaua joonistamine
+        function renderDashboard(data) {
+            if (!data || data.length === 0) return;
+
+            // KPI numbrite arvutamine (esialgu võtab viimase 10 keskmise)
+            const recent = data.slice(0, 10);
+            
+            const getAvg = (key) => {
+                const sum = recent.reduce((acc, row) => acc + (Number(row[key]) || 5), 0);
+                return (sum / (recent.length || 1)).toFixed(1);
+            };
+
+            document.getElementById('kpi-arusaadavus').innerText = getAvg('arusaadavus');
+            document.getElementById('kpi-inimkesksus').innerText = getAvg('inimkesksus');
+            document.getElementById('kpi-sekkumised').innerText = data.filter(r => r.katkestus === 'Jah').length;
+
+            // Tabeli täitmine
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            const riskRows = data.filter(r => r.katkestus === 'Jah').slice(0, 5);
+            riskRows.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-slate-800">${row.source || 'Allikas'}</div>
+                        <div class="text-xs text-slate-400">${row.date ? new Date(row.date).toLocaleDateString('et-EE') : ''}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        ${row.link ? `<a href="${row.link}" target="_blank" class="text-blue-600 hover:underline font-medium">${row.title}</a>` : `<span class="font-medium text-slate-700">${row.title}</span>`}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="bg-green-50 text-green-700 px-3 py-2 rounded border border-green-100 text-sm">
+                            ${row.tolge || 'Soovitus puudub'}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Graafik 1: Trend
+            if (trendChartInstance) trendChartInstance.destroy();
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            
+            const dates = recent.map(r => r.date ? new Date(r.date).toLocaleDateString('et-EE').substring(0,5) : '').reverse();
+            
+            trendChartInstance = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        { label: 'Inimkesksus', data: recent.map(r => r.inimkesksus || 5).reverse(), borderColor: '#10b981', tension: 0.3 },
+                        { label: 'Arusaadavus', data: recent.map(r => r.arusaadavus || 5).reverse(), borderColor: '#3b82f6', tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Graafik 2: Radar / Ämblikuvõrk
+            if (radarChartInstance) radarChartInstance.destroy();
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            
+            radarChartInstance = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Inimkesksus', 'Arusaadavus', 'Lõimitus', 'Tegevusele suunatus', 'Elulisus'],
+                    datasets: [{
+                        label: 'Hetkeseis (viimased 10)',
+                        data: [
+                            getAvg('inimkesksus'), 
+                            getAvg('arusaadavus'), 
+                            getAvg('loimitus'), 
+                            getAvg('tegevusele_suunatus'), 
+                            getAvg('elulisus')
+                        ],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 2
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: { r: { min: 0, max: 10 } }
+                }
+            });
+        }
+
+        // Käivita laadimine lehe avamisel
+        window.onload = fetchData;
+    </script>
+</body>
+</html>

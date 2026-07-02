@@ -32,6 +32,12 @@
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        
+        #insights-content h3 { font-size: 1.25rem; font-weight: bold; color: #1e3a8a; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        #insights-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        #insights-content li { margin-bottom: 0.5rem; }
+        #insights-content p { margin-bottom: 1rem; }
+        #insights-content b { font-weight: 700; color: #111827; }
     </style>
 </head>
 <body class="text-gray-800 antialiased h-screen flex overflow-hidden">
@@ -44,6 +50,9 @@
         <nav class="flex-1 px-4 space-y-2 mt-4">
             <a href="#" id="nav-peavaade" onclick="switchView('peavaade'); return false;" class="nav-item block py-2.5 px-4 rounded bg-blue-800">
                 <i class="fas fa-chart-line mr-2 w-5 text-center"></i> Peavaade
+            </a>
+            <a href="#" id="nav-insights" onclick="switchView('insights'); return false;" class="nav-item block py-2.5 px-4 rounded hover:bg-blue-700">
+                <i class="fas fa-lightbulb mr-2 w-5 text-center text-yellow-300"></i> AI Analüüs
             </a>
             <a href="#" id="nav-seaded" onclick="switchView('seaded'); return false;" class="nav-item block py-2.5 px-4 rounded hover:bg-blue-700">
                 <i class="fas fa-cog mr-2 w-5 text-center"></i> Seaded
@@ -63,6 +72,13 @@
             <div id="loading" class="flex flex-col justify-center items-center py-32">
                 <div class="loader h-16 w-16 border-4 border-t-4 border-gray-200 rounded-full mb-6"></div>
                 <span class="text-xl text-gray-600">Loen andmeid...</span>
+            </div>
+
+            <div id="view-insights" class="hidden bg-white p-8 rounded-xl shadow-sm max-w-4xl">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-4">Nädala Trendid ja Lüngad</h2>
+                <div id="insights-content" class="text-gray-700 space-y-4">
+                    Ootan andmeid...
+                </div>
             </div>
 
             <div id="view-peavaade" class="hidden space-y-6">
@@ -116,17 +132,51 @@
     </main>
 
     <script>
+        // Siin on sinu töötav API link. Kui avaldad Apps Scriptis uue versiooni, veendu, et link jääb samaks.
         const API_URL = "https://script.google.com/macros/s/AKfycbxic9F7g8jwAgWnEMfg43KrHQGtsqltMWcrvg8icnT-FmQfzYJ_wXnv81Vq5hP6_GE_KQ/exec";
         let radarChart = null;
 
         async function fetchData() {
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('view-peavaade').classList.add('hidden');
+            document.getElementById('view-insights').classList.add('hidden');
+            
             try {
                 const response = await fetch(API_URL);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
+                let rawData = await response.json();
+                
+                let data = [];
+                
+                // Kontrollime, mis kujul Apps Script andmed saatis (eraldi 'data' ja 'insight' või lihtsalt massiiv)
+                if (!Array.isArray(rawData) && rawData && typeof rawData === 'object') {
+                    if (Array.isArray(rawData.data)) data = rawData.data;
+                    else if (Array.isArray(rawData.items)) data = rawData.items;
+                    else if (Array.isArray(rawData.result)) data = rawData.result;
+                } else if (Array.isArray(rawData)) {
+                    if (rawData.length > 0 && Array.isArray(rawData[0])) {
+                        const headers = rawData[0].map(h => String(h).toLowerCase().trim());
+                        for (let i = 1; i < rawData.length; i++) {
+                            let obj = {};
+                            headers.forEach((header, index) => {
+                                obj[header] = rawData[i][index];
+                            });
+                            data.push(obj);
+                        }
+                    } else {
+                        data = rawData;
+                    }
+                }
+
+                // Lisame AI raporti teksti õigesse kohta, kui see on olemas
+                if (rawData && rawData.insight) {
+                    document.getElementById('insights-content').innerHTML = rawData.insight;
+                } else {
+                    document.getElementById('insights-content').innerHTML = "<p>Uut analüüsi ei leitud. Oota andmete kogunemist või käivita raport käsitsi.</p>";
+                }
+                
                 render(data);
+
             } catch(e) { 
                 console.error("Viga andmete laadimisel:", e);
                 document.getElementById('loading').innerHTML = `<div class="text-red-500 text-center"><i class="fas fa-exclamation-triangle text-3xl mb-2"></i><br>Andmete laadimine ebaõnnestus.<br><span class="text-sm text-gray-500">${e.message}</span></div>`;
@@ -138,7 +188,6 @@
             let count = 0;
             let tableHTML = "";
 
-            // See on kõige olulisem muudatus: otsib andmeid nime järgi, ignoreerides suur-/väiketähti ja tühikuid
             const val = (row, key, altKey = "") => {
                 if (!row) return null;
                 const lowerKey = key.toLowerCase().trim();
@@ -151,22 +200,23 @@
                 return found ? row[found] : null;
             };
 
-            data.forEach(row => {
-                // Otsime numbrid üles kindlate veerunimede järgi
+            const reversedData = [...data].reverse();
+
+            reversedData.forEach(row => {
                 const inim = Number(val(row, 'inimkesksus')) || 0;
                 const elul = Number(val(row, 'elulisus')) || 0;
                 const arus = Number(val(row, 'arusaadavus')) || 0;
                 const loim = Number(val(row, 'loimitus')) || 0;
                 const tegev = Number(val(row, 'tegevusele_suunatus', 'tegevus')) || 0;
 
-                // Otsime tekstiandmed üles
                 const title = val(row, 'title', 'pealkiri');
                 const url = val(row, 'url', 'link');
                 const source = val(row, 'source', 'allikas');
                 const dateRaw = val(row, 'date', 'kuupäev');
                 const tolge = val(row, 'tolge', 'rewrite');
 
-                // Arvutame keskmisi AINULT siis, kui real on vähemalt mingid päris skoorid
+                if (!title) return;
+
                 if (inim > 0 || elul > 0 || arus > 0 || loim > 0 || tegev > 0) {
                     sums.inimkesksus += inim;
                     sums.elulisus += elul;
@@ -176,7 +226,6 @@
                     count++;
                 }
 
-                // Vormindame kuupäeva
                 let dateStr = 'Kuupäev puudub';
                 if (dateRaw) {
                     try {
@@ -187,27 +236,29 @@
                     } catch(e) {}
                 }
 
-                const hasTranslation = tolge && String(tolge).trim() !== '' && String(tolge).trim() !== '-';
+                const hasTranslation = tolge && String(tolge).trim() !== '' && String(tolge).trim() !== '-' && String(tolge) !== 'Analüüs ebaõnnestus';
                 const displayTitle = title ? title : 'Pealkiri puudub';
                 const displaySource = source ? source : 'Teadmata allikas';
                 const displayTolge = hasTranslation ? tolge : 'Ootab hindamist...';
 
-                tableHTML += `<tr>
-                    <td class="py-4 text-sm font-medium pr-4 w-1/2">
-                        <a href="${url || '#'}" target="_blank" class="text-blue-700 hover:text-blue-900 transition-colors line-clamp-2" title="${displayTitle}">
-                            ${displayTitle}
-                        </a>
-                        <div class="text-[11px] text-gray-500 mt-1.5 flex items-center">
-                            <span class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 mr-2"><i class="fas fa-building mr-1"></i> ${displaySource}</span>
-                            <i class="far fa-clock mr-1"></i> ${dateStr}
-                        </div>
-                    </td>
-                    <td class="py-4 text-sm text-gray-600 w-1/2">
-                        <div class="bg-blue-50/50 p-2 rounded border border-blue-100 text-[13px] italic line-clamp-3" title="${displayTolge}">
-                            "${displayTolge}"
-                        </div>
-                    </td>
-                </tr>`;
+                if(count <= 50) {
+                    tableHTML += `<tr>
+                        <td class="py-4 text-sm font-medium pr-4 w-1/2">
+                            <a href="${url || '#'}" target="_blank" class="text-blue-700 hover:text-blue-900 transition-colors line-clamp-2" title="${displayTitle}">
+                                ${displayTitle}
+                            </a>
+                            <div class="text-[11px] text-gray-500 mt-1.5 flex items-center">
+                                <span class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 mr-2"><i class="fas fa-building mr-1"></i> ${displaySource}</span>
+                                <i class="far fa-clock mr-1"></i> ${dateStr}
+                            </div>
+                        </td>
+                        <td class="py-4 text-sm text-gray-600 w-1/2">
+                            <div class="bg-blue-50/50 p-2 rounded border border-blue-100 text-[13px] italic line-clamp-3" title="${displayTolge}">
+                                "${displayTolge}"
+                            </div>
+                        </td>
+                    </tr>`;
+                }
             });
 
             const safeCount = count > 0 ? count : 1;
@@ -263,13 +314,40 @@
             });
 
             document.getElementById('loading').classList.add('hidden');
-            document.getElementById('view-peavaade').classList.remove('hidden');
+            
+            // Vaatame, milline menüüpunkt on parasjagu aktiivne
+            const activeNav = document.querySelector('.nav-item.bg-blue-800');
+            if(activeNav && activeNav.id === 'nav-insights') {
+                document.getElementById('view-insights').classList.remove('hidden');
+            } else {
+                document.getElementById('view-peavaade').classList.remove('hidden');
+            }
         }
 
+        // Käivitab andmete laadimise lehe avanemisel
         document.addEventListener('DOMContentLoaded', fetchData);
+        
         function switchView(v) {
-            // Placeholder for future navigation logic
-            console.log("Switching view to:", v);
+            // Peidame kõik vaated
+            document.getElementById('view-peavaade').classList.add('hidden');
+            document.getElementById('view-insights').classList.add('hidden');
+            
+            // Näitame valitud vaadet
+            const viewElement = document.getElementById('view-' + v);
+            if (viewElement) {
+                viewElement.classList.remove('hidden');
+            }
+            
+            // Muudame menüü nuppude värvi
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-blue-800');
+                el.classList.add('hover:bg-blue-700');
+            });
+            const activeNavItem = document.getElementById('nav-' + v);
+            if(activeNavItem) {
+                activeNavItem.classList.add('bg-blue-800');
+                activeNavItem.classList.remove('hover:bg-blue-700');
+            }
         }
     </script>
 </body>

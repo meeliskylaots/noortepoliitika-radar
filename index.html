@@ -81,6 +81,33 @@
                 </div>
             </div>
 
+            <div id="view-seaded" class="hidden bg-white p-8 rounded-xl shadow-sm max-w-4xl">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-4">Süsteemi Seaded ja Info</h2>
+                <div class="space-y-6 text-gray-700">
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <h3 class="font-bold text-blue-900 mb-2"><i class="fas fa-database mr-2"></i> Andmete haldamine</h3>
+                        <p class="text-sm mb-2">Radari andmeid hallatakse otse Sinu <b>"Peaeksperdi Radar"</b> Google Sheets tabelis.</p>
+                        <p class="text-sm">Uute allikate lisamiseks või märksõnade muutmiseks ava oma tabel. Kõik seal tehtud muudatused rakenduvad järgmisel automaatsel skaneerimisel.</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-2"><i class="fas fa-robot mr-2"></i> Kuidas AI tekste hindab?</h3>
+                        <ul class="list-disc pl-5 space-y-1 text-sm">
+                            <li><b>Inimkesksus (0-10):</b> Kas fookuses on noor (kõrge skoor) või ametiasutuse/projekti bürokraatia (madal skoor)?</li>
+                            <li><b>Elulisus (0-10):</b> Kas teema on noore igapäevaeluga seotud ja päriselt kasulik?</li>
+                            <li><b>Arusaadavus (0-10):</b> Kas keel on lihtne ja selge või kantseliitlik?</li>
+                            <li><b>Lõimitus (0-10):</b> Kas on seoseid teiste valdkondadega (haridus, sotsiaal)?</li>
+                            <li><b>Tegevus (0-10):</b> Kas noort kutsutakse üles midagi tegema (kandideerima, osalema, arvamust avaldama)?</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-2"><i class="fas fa-clock mr-2"></i> Automaatika staatus</h3>
+                        <p class="text-sm">Süsteem otsib uusi artikleid automaatselt iga päev. AI süvaanalüüs ja trendide raport koostatakse automaatselt igal esmaspäeval kell 08:00.</p>
+                    </div>
+                </div>
+            </div>
+
             <div id="view-peavaade" class="hidden space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-blue-500 hover:shadow-md transition-shadow">
@@ -132,7 +159,7 @@
     </main>
 
     <script>
-        // Siin on sinu töötav API link. Kui avaldad Apps Scriptis uue versiooni, veendu, et link jääb samaks.
+        // API link peab jääma samaks, see võtab Google'ist info.
         const API_URL = "https://script.google.com/macros/s/AKfycbxic9F7g8jwAgWnEMfg43KrHQGtsqltMWcrvg8icnT-FmQfzYJ_wXnv81Vq5hP6_GE_KQ/exec";
         let radarChart = null;
 
@@ -140,6 +167,8 @@
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('view-peavaade').classList.add('hidden');
             document.getElementById('view-insights').classList.add('hidden');
+            const viewSeaded = document.getElementById('view-seaded');
+            if(viewSeaded) viewSeaded.classList.add('hidden');
             
             try {
                 const response = await fetch(API_URL);
@@ -148,7 +177,7 @@
                 
                 let data = [];
                 
-                // Kontrollime, mis kujul Apps Script andmed saatis (eraldi 'data' ja 'insight' või lihtsalt massiiv)
+                // Kontrollime, mis kujul Apps Script andmed saatis
                 if (!Array.isArray(rawData) && rawData && typeof rawData === 'object') {
                     if (Array.isArray(rawData.data)) data = rawData.data;
                     else if (Array.isArray(rawData.items)) data = rawData.items;
@@ -168,7 +197,6 @@
                     }
                 }
 
-                // Lisame AI raporti teksti õigesse kohta, kui see on olemas
                 if (rawData && rawData.insight) {
                     document.getElementById('insights-content').innerHTML = rawData.insight;
                 } else {
@@ -315,10 +343,14 @@
 
             document.getElementById('loading').classList.add('hidden');
             
-            // Vaatame, milline menüüpunkt on parasjagu aktiivne
+            // Vaatame, milline menüüpunkt on parasjagu aktiivne ja näitame õiget lehte
             const activeNav = document.querySelector('.nav-item.bg-blue-800');
-            if(activeNav && activeNav.id === 'nav-insights') {
-                document.getElementById('view-insights').classList.remove('hidden');
+            if(activeNav) {
+                const targetViewId = activeNav.id.replace('nav-', 'view-');
+                const targetView = document.getElementById(targetViewId);
+                if(targetView) {
+                    targetView.classList.remove('hidden');
+                }
             } else {
                 document.getElementById('view-peavaade').classList.remove('hidden');
             }
@@ -328,17 +360,19 @@
         document.addEventListener('DOMContentLoaded', fetchData);
         
         function switchView(v) {
-            // Peidame kõik vaated
+            // 1. Peidame kõik kolm vaadet
             document.getElementById('view-peavaade').classList.add('hidden');
             document.getElementById('view-insights').classList.add('hidden');
+            const viewSeaded = document.getElementById('view-seaded');
+            if (viewSeaded) viewSeaded.classList.add('hidden');
             
-            // Näitame valitud vaadet
+            // 2. Näitame ainult valitud vaadet
             const viewElement = document.getElementById('view-' + v);
             if (viewElement) {
                 viewElement.classList.remove('hidden');
             }
             
-            // Muudame menüü nuppude värvi
+            // 3. Uuendame külgmenüü värve (aktiivse märkimine)
             document.querySelectorAll('.nav-item').forEach(el => {
                 el.classList.remove('bg-blue-800');
                 el.classList.add('hover:bg-blue-700');

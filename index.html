@@ -1,32 +1,275 @@
-<div id="ai-insight-container" class="space-y-6">
-    <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 mb-6">
-        <h3 class="text-lg font-semibold text-blue-900 mb-4">Loo uus analüüs</h3>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Vali profiil</label>
-                <select id="ai-role" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                    <option value="Lõimitud noortepoliitika ja mainekujunduse peaekspert. Fookus on riiklikul strateegial, valdkondade ühendamisel ja maine kujundamisel.">Lõimitud noortepoliitika ja mainekujunduse peaekspert</option>
-                    <option value="Haridusinnovatsiooni uurija (Loomelabori mudel). Fookus on teaduspõhisusel, uutel õppemeetoditel ja formaal- ning informaalse hariduse ühendamisel.">Haridusinnovatsiooni uurija</option>
-                    <option value="Kogukonnakeskuse juht. Fookus on praktilisel tööl, kohaliku elu edendamisel ja noorte kaasamisel rohujuure tasandil.">Kogukonnajuht</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Erifookus (valikuline)</label>
-                <input type="text" id="ai-custom-prompt" placeholder="nt. Keskendu noorte kaasamisele..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-            </div>
-        </div>
-        
-        <button onclick="generateNewReport()" id="generate-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center justify-center w-full md:w-auto">
-            <span id="btn-text">Genereeri raport kohe</span>
-            <svg id="btn-spinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-        </button>
-    </div>
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peaeksperdi Radar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden font-sans text-gray-800">
 
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <h2 class="text-xl font-bold mb-4">Viimane raport</h2>
-        <div id="ai-insight-content" class="text-gray-800 space-y-4">
-            <p class="text-gray-500">Laen andmeid...</p>
+    <aside class="w-64 bg-blue-900 text-white flex flex-col shadow-lg z-10">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold tracking-wider">RADAR</h1>
+            <p class="text-blue-300 text-sm mt-1">Lõimitud Noortepoliitika</p>
         </div>
-    </div>
-</div>
+        
+        <nav class="flex-1 mt-6">
+            <button onclick="switchView('view-peavaade', this)" class="w-full flex items-center px-6 py-3 text-left bg-blue-800 border-l-4 border-white transition-colors nav-btn">
+                <i class="fas fa-chart-line w-6 text-center mr-2"></i> Peavaade
+            </button>
+            <button onclick="switchView('view-ai-analuus', this)" class="w-full flex items-center px-6 py-3 text-left hover:bg-blue-800 border-l-4 border-transparent transition-colors nav-btn">
+                <i class="fas fa-lightbulb w-6 text-center mr-2 text-yellow-400"></i> AI Analüüs
+            </button>
+            <button onclick="switchView('view-seaded', this)" class="w-full flex items-center px-6 py-3 text-left hover:bg-blue-800 border-l-4 border-transparent transition-colors nav-btn">
+                <i class="fas fa-cog w-6 text-center mr-2"></i> Seaded
+            </button>
+        </nav>
+        
+        <div class="p-4 bg-blue-950 text-xs text-blue-400 text-center">
+            Mootor: GPT-4o-mini
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden relative">
+        
+        <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center z-0">
+            <h2 id="page-title" class="text-xl font-semibold text-gray-700">Analüüsi Töölaud</h2>
+            <button onclick="fetchData()" class="flex items-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-md transition border border-gray-200">
+                <i class="fas fa-sync-alt mr-2"></i> Uuenda andmeid
+            </button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8">
+            
+            <div id="view-peavaade" class="space-y-6">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="score-cards-container">
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Inimkesksus</div><div class="text-3xl font-bold text-blue-600">--</div></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Elulisus</div><div class="text-3xl font-bold text-green-600">--</div></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Arusaadavus</div><div class="text-3xl font-bold text-yellow-600">--</div></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Lõimitus</div><div class="text-3xl font-bold text-purple-600">--</div></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Tegevus</div><div class="text-3xl font-bold text-red-600">--</div></div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center">
+                        <h3 class="text-lg font-semibold mb-4 self-start">Skooride jaotus</h3>
+                        <div class="w-full max-w-md">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col h-[500px]">
+                        <h3 class="text-lg font-semibold mb-4">Viimased analüüsitud tekstid</h3>
+                        <div class="overflow-y-auto flex-1 pr-2" id="recent-texts-container">
+                            <p class="text-gray-500 text-sm">Andmete laadimine...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-ai-analuus" class="hidden space-y-6">
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                    <h3 class="text-lg font-semibold text-blue-900 mb-4">Loo uus analüüs</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Vali profiil</label>
+                            <select id="ai-role" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <option value="Lõimitud noortepoliitika ja mainekujunduse peaekspert. Fookus on riiklikul strateegial, valdkondade ühendamisel ja maine kujundamisel.">Lõimitud noortepoliitika ja mainekujunduse peaekspert</option>
+                                <option value="Haridusinnovatsiooni uurija (Loomelabori mudel). Fookus on teaduspõhisusel, uutel õppemeetoditel ja formaal- ning informaalse hariduse ühendamisel.">Haridusinnovatsiooni uurija</option>
+                                <option value="Kogukonnakeskuse juht. Fookus on praktilisel tööl, kohaliku elu edendamisel ja noorte kaasamisel rohujuure tasandil.">Kogukonnajuht</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Erifookus (valikuline)</label>
+                            <input type="text" id="ai-custom-prompt" placeholder="nt. Keskendu noorte vaimsele tervisele..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white">
+                        </div>
+                    </div>
+                    
+                    <button onclick="generateNewReport()" id="generate-btn" class="bg-blue-600 text-white px-5 py-2.5 rounded-md hover:bg-blue-700 transition flex items-center justify-center font-medium">
+                        <span id="btn-text">Genereeri raport kohe</span>
+                        <svg id="btn-spinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </button>
+                </div>
+
+                <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800">Nädata Trendid ja Lüngad</h2>
+                    <div id="ai-insight-content" class="text-gray-700 space-y-4 leading-relaxed max-w-4xl">
+                        <p class="text-gray-500 italic">Laen andmeid...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-seaded" class="hidden space-y-6 max-w-4xl">
+                <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800">Süsteemi Seaded ja Info</h2>
+                    
+                    <div class="bg-blue-50 p-5 rounded-lg border border-blue-100 mb-8">
+                        <h4 class="font-bold text-blue-900 flex items-center"><i class="fas fa-database mr-2"></i> Andmete haldamine</h4>
+                        <p class="text-sm text-blue-800 mt-2">Radari andmeid hallatakse otse Sinu <b>"Peaeksperdi Radar"</b> Google Sheets tabelis. Uute allikate lisamiseks või märksõnade muutmiseks ava oma tabel. Kõik seal tehtud muudatused rakenduvad järgmisel automaatsel skaneerimisel.</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-bold text-gray-800 flex items-center mb-3"><i class="fas fa-robot mr-2 text-gray-600"></i> Kuidas AI tekste hindab?</h4>
+                            <ul class="list-disc pl-5 text-sm text-gray-600 space-y-2">
+                                <li><b>Inimkesksus (0-10):</b> Kas fookuses on noor (kõrge skoor) või ametiasutuse/projekti bürokraatia (madal skoor)?</li>
+                                <li><b>Elulisus (0-10):</b> Kas teema on noore igapäevaeluga seotud ja päriselt kasulik?</li>
+                                <li><b>Arusaadavus (0-10):</b> Kas keel on lihtne ja selge või kantseliitlik?</li>
+                                <li><b>Lõimitus (0-10):</b> Kas on seoseid teiste valdkondadega (haridus, sotsiaal)?</li>
+                                <li><b>Tegevus (0-10):</b> Kas noort kutsutakse üles midagi tegema (kandideerima, osalema, arvamust avaldama)?</li>
+                            </ul>
+                        </div>
+
+                        <hr class="border-gray-100">
+
+                        <div>
+                            <h4 class="font-bold text-gray-800 flex items-center mb-3"><i class="fas fa-clock mr-2 text-gray-600"></i> Automaatika staatus</h4>
+                            <p class="text-sm text-gray-600">Süsteem otsib uusi artikleid automaatselt iga päev. AI süvaanalüüs ja trendide raport koostatakse automaatselt igal esmaspäeval kell 08:00 ning saadetakse Sinu e-postile.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // ==========================================
+        // 1. SEADISTUSED
+        // ==========================================
+        // Asenda see URL kindlasti oma uue Google Web App URL-iga!
+        const SCRIPT_URL = "SINU_GOOGLE_APPS_SCRIPT_WEB_APP_URL_SIIA"; 
+        
+        let radarChartInstance = null; // Graafiku mälus hoidmiseks
+
+        // ==========================================
+        // 2. VAADETE VAHETAMINE
+        // ==========================================
+        function switchView(viewId, btnElement) {
+            // Peida kõik vaated
+            document.getElementById('view-peavaade').classList.add('hidden');
+            document.getElementById('view-ai-analuus').classList.add('hidden');
+            document.getElementById('view-seaded').classList.add('hidden');
+            
+            // Näita valitud vaadet
+            document.getElementById(viewId).classList.remove('hidden');
+            
+            // Uuenda nuppude stiile (aktiivne vs inaktiivne)
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-blue-800', 'border-white');
+                btn.classList.add('border-transparent');
+            });
+            
+            if (btnElement) {
+                btnElement.classList.remove('border-transparent');
+                btnElement.classList.add('bg-blue-800', 'border-white');
+            }
+            
+            // Uuenda pealkirja
+            const titles = {
+                'view-peavaade': 'Peavaade',
+                'view-ai-analuus': 'AI Analüüsi Töölaud',
+                'view-seaded': 'Seaded'
+            };
+            document.getElementById('page-title').innerText = titles[viewId];
+        }
+
+        // ==========================================
+        // 3. ANDMETE LAADIMINE (GET)
+        // ==========================================
+        async function fetchData() {
+            try {
+                // Cache buster aitab vältida brauseri vana mälu kasutamist
+                const cacheBuster = "?t=" + new Date().getTime();
+                const response = await fetch(SCRIPT_URL + cacheBuster);
+                const result = await response.json();
+                
+                const radarData = result.data ? result.data : result;
+                
+                // Pane AI analüüs ekraanile
+                if (result.insight) {
+                    const aiKast = document.getElementById('ai-insight-content');
+                    if (aiKast) {
+                        aiKast.innerHTML = result.insight;
+                    }
+                }
+
+                // Joonista graafikud (kui funktsioonid on defineeritud)
+                if (typeof renderDashboard === 'function') renderDashboard(radarData);
+                
+            } catch (error) {
+                console.error("Viga andmete laadimisel:", error);
+                document.getElementById('ai-insight-content').innerHTML = '<p class="text-red-500">Andmete laadimine ebaõnnestus. Kontrolli ühendust ja Web App URL-i.</p>';
+            }
+        }
+
+        // ==========================================
+        // 4. UUE RAPORTI LOOMINE (POST)
+        // ==========================================
+        async function generateNewReport() {
+            const role = document.getElementById('ai-role').value;
+            const customPrompt = document.getElementById('ai-custom-prompt').value;
+            const btnText = document.getElementById('btn-text');
+            const spinner = document.getElementById('btn-spinner');
+            
+            btnText.innerText = "Analüüsin andmeid (võtab u 20 sek)...";
+            spinner.classList.remove('hidden');
+            document.getElementById('generate-btn').disabled = true;
+
+            const payload = {
+                action: "generate",
+                role: role,
+                customPrompt: customPrompt
+            };
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('ai-insight-content').innerHTML = result.insight;
+                    document.getElementById('ai-custom-prompt').value = ""; 
+                } else {
+                    alert("Viga raporti loomisel: " + result.error);
+                }
+            } catch (error) {
+                console.error("Viga POST päringul:", error);
+                alert("Ühenduse viga. Veendu, et Sinu Apps Scriptis on doPost() funktsioon olemas ja uus versioon juurutatud.");
+            } finally {
+                btnText.innerText = "Genereeri raport kohe";
+                spinner.classList.add('hidden');
+                document.getElementById('generate-btn').disabled = false;
+            }
+        }
+
+        // ==========================================
+        // 5. KÄIVITUS LEHE LAADIMISEL
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+        });
+
+        // ------------------------------------------------------------------------
+        // KUI SUL OLID EELMISES FAILIS OMA GRAAFIKUTE JOONISTAMISE FUNKTSIOONID 
+        // (nagu renderDashboard, renderScoreCards, jne), SIIS KLEEB NEED SIIA ALLA:
+        // ------------------------------------------------------------------------
+
+        function renderDashboard(data) {
+            // See on lihtne kohatäitja juhuks, kui oma funktsioone ei lisanud.
+            // See joonistab andmete põhjal vajalikud numbrid ja kastid Peavaatesse.
+            console.log("Andmed laetud, kokku ridu:", data.length);
+            // Siia läheb Sinu chart.js kood...
+        }
+
+    </script>
+</body>
+</html>

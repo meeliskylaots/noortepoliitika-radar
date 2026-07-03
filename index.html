@@ -10,6 +10,7 @@
 </head>
 <body class="bg-gray-50 flex h-screen overflow-hidden font-sans text-gray-800">
 
+    <!-- Külgriba / Sidebar -->
     <aside class="w-64 bg-blue-900 text-white flex flex-col shadow-lg z-10">
         <div class="p-6">
             <h1 class="text-2xl font-bold tracking-wider">RADAR</h1>
@@ -33,8 +34,10 @@
         </div>
     </aside>
 
+    <!-- Peamine sisu -->
     <main class="flex-1 flex flex-col overflow-hidden relative">
         
+        <!-- Ülemine riba / Header -->
         <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center z-0">
             <h2 id="page-title" class="text-xl font-semibold text-gray-700">Analüüsi Töölaud</h2>
             <button onclick="fetchData()" class="flex items-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-md transition border border-gray-200">
@@ -42,9 +45,12 @@
             </button>
         </header>
 
+        <!-- Vaadete konteiner -->
         <div class="flex-1 overflow-y-auto p-8">
             
+            <!-- 1. PEAVAADE -->
             <div id="view-peavaade" class="space-y-6">
+                <!-- Skooride kaardid -->
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="score-cards-container">
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Inimkesksus</div><div class="text-3xl font-bold text-blue-600">--</div></div>
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Elulisus</div><div class="text-3xl font-bold text-green-600">--</div></div>
@@ -54,6 +60,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Radari graafik -->
                     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center">
                         <h3 class="text-lg font-semibold mb-4 self-start">Skooride jaotus</h3>
                         <div class="w-full max-w-md">
@@ -61,6 +68,7 @@
                         </div>
                     </div>
 
+                    <!-- Viimaste artiklite tabel -->
                     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col h-[500px]">
                         <h3 class="text-lg font-semibold mb-4">Viimased analüüsitud tekstid</h3>
                         <div class="overflow-y-auto flex-1 pr-2" id="recent-texts-container">
@@ -70,22 +78,25 @@
                 </div>
             </div>
 
+            <!-- 2. AI ANALÜÜSI VAADE (INTERAKTIIVNE) -->
             <div id="view-ai-analuus" class="hidden space-y-6">
+                <!-- Generaatori paneel -->
                 <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
-                    <h3 class="text-lg font-semibold text-blue-900 mb-4">Loo uus analüüs</h3>
+                    <h3 class="text-lg font-semibold text-blue-900 mb-4">Loo uus süvaanalüüs</h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Vali profiil</label>
-                            <select id="ai-role" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white">
-                                <option value="Lõimitud noortepoliitika ja mainekujunduse peaekspert. Fookus on riiklikul strateegial, valdkondade ühendamisel ja maine kujundamisel.">Lõimitud noortepoliitika ja mainekujunduse peaekspert</option>
-                                <option value="Haridusinnovatsiooni uurija (Loomelabori mudel). Fookus on teaduspõhisusel, uutel õppemeetoditel ja formaal- ning informaalse hariduse ühendamisel.">Haridusinnovatsiooni uurija</option>
-                                <option value="Kogukonnakeskuse juht. Fookus on praktilisel tööl, kohaliku elu edendamisel ja noorte kaasamisel rohujuure tasandil.">Kogukonnajuht</option>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Vali raporti tüüp</label>
+                            <select id="report-type" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <option value="üldine">Üldine trendide ja lünkade analüüs</option>
+                                <option value="maine">Mainekujunduse audit</option>
+                                <option value="keel">Kommunikatsiooni ja kantseliidi analüüs</option>
+                                <option value="loimitus">Valdkondade lõimituse raport</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Erifookus (valikuline)</label>
-                            <input type="text" id="ai-custom-prompt" placeholder="nt. Keskendu noorte vaimsele tervisele..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Täpsustav käsk või fookus (valikuline)</label>
+                            <input type="text" id="ai-custom-prompt" placeholder="nt. Võrdle ERRi ja kohalike lehtede kvaliteeti..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white">
                         </div>
                     </div>
                     
@@ -95,14 +106,16 @@
                     </button>
                 </div>
 
+                <!-- Raporti kuvamise ala -->
                 <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
-                    <h2 class="text-2xl font-bold mb-6 text-gray-800">Nädata Trendid ja Lüngad</h2>
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800">Radari Analüüs</h2>
                     <div id="ai-insight-content" class="text-gray-700 space-y-4 leading-relaxed max-w-4xl">
                         <p class="text-gray-500 italic">Laen andmeid...</p>
                     </div>
                 </div>
             </div>
 
+            <!-- 3. SEADED VAADE -->
             <div id="view-seaded" class="hidden space-y-6 max-w-4xl">
                 <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
                     <h2 class="text-2xl font-bold mb-6 text-gray-800">Süsteemi Seaded ja Info</h2>
@@ -137,6 +150,7 @@
         </div>
     </main>
 
+    <!-- RAKENDUSE LOOGIKA -->
     <script>
         // ==========================================
         // 1. SEADISTUSED
@@ -144,21 +158,18 @@
         // Asenda see URL kindlasti oma uue Google Web App URL-iga!
         const SCRIPT_URL = "SINU_GOOGLE_APPS_SCRIPT_WEB_APP_URL_SIIA"; 
         
-        let radarChartInstance = null; // Graafiku mälus hoidmiseks
+        let radarChartInstance = null; 
 
         // ==========================================
         // 2. VAADETE VAHETAMINE
         // ==========================================
         function switchView(viewId, btnElement) {
-            // Peida kõik vaated
             document.getElementById('view-peavaade').classList.add('hidden');
             document.getElementById('view-ai-analuus').classList.add('hidden');
             document.getElementById('view-seaded').classList.add('hidden');
             
-            // Näita valitud vaadet
             document.getElementById(viewId).classList.remove('hidden');
             
-            // Uuenda nuppude stiile (aktiivne vs inaktiivne)
             const buttons = document.querySelectorAll('.nav-btn');
             buttons.forEach(btn => {
                 btn.classList.remove('bg-blue-800', 'border-white');
@@ -170,7 +181,6 @@
                 btnElement.classList.add('bg-blue-800', 'border-white');
             }
             
-            // Uuenda pealkirja
             const titles = {
                 'view-peavaade': 'Peavaade',
                 'view-ai-analuus': 'AI Analüüsi Töölaud',
@@ -184,14 +194,12 @@
         // ==========================================
         async function fetchData() {
             try {
-                // Cache buster aitab vältida brauseri vana mälu kasutamist
                 const cacheBuster = "?t=" + new Date().getTime();
                 const response = await fetch(SCRIPT_URL + cacheBuster);
                 const result = await response.json();
                 
                 const radarData = result.data ? result.data : result;
                 
-                // Pane AI analüüs ekraanile
                 if (result.insight) {
                     const aiKast = document.getElementById('ai-insight-content');
                     if (aiKast) {
@@ -199,7 +207,6 @@
                     }
                 }
 
-                // Joonista graafikud (kui funktsioonid on defineeritud)
                 if (typeof renderDashboard === 'function') renderDashboard(radarData);
                 
             } catch (error) {
@@ -212,7 +219,7 @@
         // 4. UUE RAPORTI LOOMINE (POST)
         // ==========================================
         async function generateNewReport() {
-            const role = document.getElementById('ai-role').value;
+            const reportType = document.getElementById('report-type').value;
             const customPrompt = document.getElementById('ai-custom-prompt').value;
             const btnText = document.getElementById('btn-text');
             const spinner = document.getElementById('btn-spinner');
@@ -223,7 +230,7 @@
 
             const payload = {
                 action: "generate",
-                role: role,
+                reportType: reportType,
                 customPrompt: customPrompt
             };
 
@@ -237,13 +244,13 @@
                 
                 if (result.success) {
                     document.getElementById('ai-insight-content').innerHTML = result.insight;
-                    document.getElementById('ai-custom-prompt').value = ""; 
+                    document.getElementById('ai-custom-prompt').value = ""; // tühjendame kasti
                 } else {
                     alert("Viga raporti loomisel: " + result.error);
                 }
             } catch (error) {
                 console.error("Viga POST päringul:", error);
-                alert("Ühenduse viga. Veendu, et Sinu Apps Scriptis on doPost() funktsioon olemas ja uus versioon juurutatud.");
+                alert("Ühenduse viga. Veendu, et Apps Scriptis on uuendused juurutatud (New Deployment).");
             } finally {
                 btnText.innerText = "Genereeri raport kohe";
                 spinner.classList.add('hidden');
@@ -259,16 +266,9 @@
         });
 
         // ------------------------------------------------------------------------
-        // KUI SUL OLID EELMISES FAILIS OMA GRAAFIKUTE JOONISTAMISE FUNKTSIOONID 
-        // (nagu renderDashboard, renderScoreCards, jne), SIIS KLEEB NEED SIIA ALLA:
+        // KUI SUL ON OMA GRAAFIKUTE JOONISTAMISE FUNKTSIOONID 
+        // (nagu renderDashboard jne), SIIS KLEEB NEED SIIA ALLA:
         // ------------------------------------------------------------------------
-
-        function renderDashboard(data) {
-            // See on lihtne kohatäitja juhuks, kui oma funktsioone ei lisanud.
-            // See joonistab andmete põhjal vajalikud numbrid ja kastid Peavaatesse.
-            console.log("Andmed laetud, kokku ridu:", data.length);
-            // Siia läheb Sinu chart.js kood...
-        }
 
     </script>
 </body>

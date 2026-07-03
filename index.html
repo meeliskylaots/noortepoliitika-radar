@@ -10,7 +10,6 @@
 </head>
 <body class="bg-gray-50 flex h-screen overflow-hidden font-sans text-gray-800">
 
-    <!-- Külgriba / Sidebar -->
     <aside class="w-64 bg-blue-900 text-white flex flex-col shadow-lg z-10">
         <div class="p-6">
             <h1 class="text-2xl font-bold tracking-wider">RADAR</h1>
@@ -34,10 +33,8 @@
         </div>
     </aside>
 
-    <!-- Peamine sisu -->
     <main class="flex-1 flex flex-col overflow-hidden relative">
         
-        <!-- Ülemine riba / Header -->
         <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center z-0">
             <h2 id="page-title" class="text-xl font-semibold text-gray-700">Analüüsi Töölaud</h2>
             <button onclick="fetchData()" class="flex items-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-md transition border border-gray-200">
@@ -45,12 +42,9 @@
             </button>
         </header>
 
-        <!-- Vaadete konteiner -->
         <div class="flex-1 overflow-y-auto p-8">
             
-            <!-- 1. PEAVAADE -->
             <div id="view-peavaade" class="space-y-6">
-                <!-- Skooride kaardid -->
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="score-cards-container">
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Inimkesksus</div><div class="text-3xl font-bold text-blue-600">--</div></div>
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Elulisus</div><div class="text-3xl font-bold text-green-600">--</div></div>
@@ -60,7 +54,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Radari graafik -->
                     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center">
                         <h3 class="text-lg font-semibold mb-4 self-start">Skooride jaotus</h3>
                         <div class="w-full max-w-md">
@@ -68,7 +61,6 @@
                         </div>
                     </div>
 
-                    <!-- Viimaste artiklite tabel -->
                     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col h-[500px]">
                         <h3 class="text-lg font-semibold mb-4">Viimased analüüsitud tekstid</h3>
                         <div class="overflow-y-auto flex-1 pr-2" id="recent-texts-container">
@@ -78,9 +70,7 @@
                 </div>
             </div>
 
-            <!-- 2. AI ANALÜÜSI VAADE (INTERAKTIIVNE) -->
             <div id="view-ai-analuus" class="hidden space-y-6">
-                <!-- Generaatori paneel -->
                 <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
                     <h3 class="text-lg font-semibold text-blue-900 mb-4">Loo uus süvaanalüüs</h3>
                     
@@ -106,16 +96,31 @@
                     </button>
                 </div>
 
-                <!-- Raporti kuvamise ala -->
                 <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
                     <h2 class="text-2xl font-bold mb-6 text-gray-800">Radari Analüüs</h2>
                     <div id="ai-insight-content" class="text-gray-700 space-y-4 leading-relaxed max-w-4xl">
                         <p class="text-gray-500 italic">Laen andmeid...</p>
                     </div>
                 </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col h-[500px] mt-6">
+                    <h2 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Vestle andmetega</h2>
+                    
+                    <div id="chat-history" class="flex-1 overflow-y-auto mb-4 space-y-4 pr-2 text-sm text-gray-700">
+                        <div class="bg-blue-50 p-3 rounded-lg rounded-tl-none inline-block max-w-[85%] border border-blue-100">
+                            Tere! Olen valmis Sinu loodud raporti või Radari andmete kohta küsimustele vastama. Mida soovid täpsustada?
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input type="text" id="chat-input" placeholder="Küsi midagi andmete kohta..." class="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-gray-50" onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                        <button onclick="sendChatMessage()" id="send-chat-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center justify-center">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- 3. SEADED VAADE -->
             <div id="view-seaded" class="hidden space-y-6 max-w-4xl">
                 <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
                     <h2 class="text-2xl font-bold mb-6 text-gray-800">Süsteemi Seaded ja Info</h2>
@@ -150,15 +155,15 @@
         </div>
     </main>
 
-    <!-- RAKENDUSE LOOGIKA -->
     <script>
         // ==========================================
         // 1. SEADISTUSED
         // ==========================================
-        // Asenda see URL kindlasti oma uue Google Web App URL-iga!
+        // ASENDA SEE URL ENDA GOOGLE APPS SCRIPT WEB APP URL-iga!
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxic9F7g8jwAgWnEMfg43KrHQGtsqltMWcrvg8icnT-FmQfzYJ_wXnv81Vq5hP6_GE_KQ/exec"; 
         
         let radarChartInstance = null; 
+        let conversationHistory = []; // Vestluse ajalugu
 
         // ==========================================
         // 2. VAADETE VAHETAMINE
@@ -216,7 +221,7 @@
         }
 
         // ==========================================
-        // 4. UUE RAPORTI LOOMINE (POST)
+        // 4. UUE RAPORTI LOOMINE (POST: generate)
         // ==========================================
         async function generateNewReport() {
             const reportType = document.getElementById('report-type').value;
@@ -224,7 +229,7 @@
             const btnText = document.getElementById('btn-text');
             const spinner = document.getElementById('btn-spinner');
             
-            btnText.innerText = "Analüüsin andmeid (võtab u 20 sek)...";
+            btnText.innerText = "Koostan andmepõhist analüüsi (u 20 sek)...";
             spinner.classList.remove('hidden');
             document.getElementById('generate-btn').disabled = true;
 
@@ -244,7 +249,7 @@
                 
                 if (result.success) {
                     document.getElementById('ai-insight-content').innerHTML = result.insight;
-                    document.getElementById('ai-custom-prompt').value = ""; // tühjendame kasti
+                    document.getElementById('ai-custom-prompt').value = ""; 
                 } else {
                     alert("Viga raporti loomisel: " + result.error);
                 }
@@ -259,24 +264,87 @@
         }
 
         // ==========================================
-        // 5. KÄIVITUS LEHE LAADIMISEL
+        // 5. AI VESTLUSE LOOGIKA (POST: chat)
         // ==========================================
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchData();
-        });
+        async function sendChatMessage() {
+            const inputField = document.getElementById('chat-input');
+            const message = inputField.value.trim();
+            if (!message) return;
 
-       // ------------------------------------------------------------------------
-        // KUI SUL ON OMA GRAAFIKUTE JOONISTAMISE FUNKTSIOONID 
-        // (nagu renderDashboard jne), SIIS KLEEB NEED SIIA ALLA:
-        // ------------------------------------------------------------------------
+            // Uuenda UI-d kasutaja sõnumiga
+            addChatMessageToUI(message, 'user');
+            inputField.value = '';
+            
+            // Lisa ajalukku
+            conversationHistory.push({ role: 'user', content: message });
+            
+            // Nupu ja inputi blokeerimine laadimise ajaks
+            const btn = document.getElementById('send-chat-btn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            inputField.disabled = true;
 
+            const payload = {
+                action: "chat",
+                messages: conversationHistory
+            };
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const aiReply = result.reply;
+                    addChatMessageToUI(aiReply, 'ai');
+                    conversationHistory.push({ role: 'assistant', content: aiReply });
+                } else {
+                    addChatMessageToUI("<span class='text-red-500'>Viga: " + result.error + "</span>", 'ai');
+                }
+            } catch (error) {
+                console.error("Viga vestlusel:", error);
+                addChatMessageToUI("<span class='text-red-500'>Ühenduse viga. Kontrolli juurutust.</span>", 'ai');
+            } finally {
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                btn.disabled = false;
+                inputField.disabled = false;
+                inputField.focus();
+            }
+        }
+
+        function addChatMessageToUI(text, sender) {
+            const historyDiv = document.getElementById('chat-history');
+            const msgDiv = document.createElement('div');
+            
+            if (sender === 'user') {
+                msgDiv.className = "bg-gray-100 p-3 rounded-lg rounded-tr-none ml-auto max-w-[85%] border border-gray-200 text-right";
+                msgDiv.innerHTML = `<b>Sina:</b><br>${text}`;
+            } else {
+                msgDiv.className = "bg-blue-50 p-3 rounded-lg rounded-tl-none inline-block max-w-[85%] border border-blue-100";
+                msgDiv.innerHTML = text; 
+            }
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = sender === 'user' ? "flex justify-end" : "flex justify-start";
+            wrapper.appendChild(msgDiv);
+            
+            historyDiv.appendChild(wrapper);
+            historyDiv.scrollTop = historyDiv.scrollHeight; 
+        }
+
+        // ==========================================
+        // 6. DASHBOARDI RENDERDAMINE
+        // ==========================================
         function renderDashboard(data) {
             if (!data || data.length === 0) {
                 document.getElementById('recent-texts-container').innerHTML = '<p class="text-gray-500">Andmeid ei leitud.</p>';
                 return;
             }
 
-            // 1. Arvuta keskmised skoorid
+            // Arvuta keskmised skoorid
             let sumInim = 0, sumElu = 0, sumArus = 0, sumLoim = 0, sumTeg = 0;
             let count = data.length;
 
@@ -306,7 +374,7 @@
                 `;
             }
 
-            // 2. Joonista Radari graafik
+            // Joonista Radari graafik
             const ctx = document.getElementById('radarChart');
             if (ctx) {
                 if (window.radarChartInstance) {
@@ -337,7 +405,7 @@
                 });
             }
 
-            // 3. Täida viimaste tekstide tabel
+            // Täida viimaste tekstide tabel
             const recentContainer = document.getElementById('recent-texts-container');
             if (recentContainer) {
                 let html = '<div class="space-y-4">';
@@ -363,6 +431,14 @@
                 recentContainer.innerHTML = html;
             }
         }
+
+        // ==========================================
+        // KÄIVITUS LEHE LAADIMISEL
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+        });
+
     </script>
 </body>
 </html>

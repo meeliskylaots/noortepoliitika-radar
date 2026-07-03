@@ -2,99 +2,431 @@
 <html lang="et">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radar 2.0 | Strateegiline Analüüsiagentuur</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Kohandatud kerimisriba professionaalsema ilme jaoks */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .prose ul { list-style-type: disc; margin-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        .prose li { margin-bottom: 0.25rem; }
+        .prose h3 { font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1.125rem; }
+        .prose b { color: #1e3a8a; }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans">
-    <div class="max-w-6xl mx-auto p-6">
-        <!-- HEADER -->
-        <header class="mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h1 class="text-3xl font-bold text-blue-900">Radar 2.0</h1>
-            <p class="text-gray-600">Strateegiline noorteinfo analüüsiagentuur</p>
+<body class="bg-slate-50 flex h-screen overflow-hidden font-sans text-slate-800">
+
+    <!-- KÜLGRIBA -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-xl z-10">
+        <div class="p-6 border-b border-slate-800">
+            <h1 class="text-2xl font-extrabold tracking-tight text-white">RADAR <span class="text-blue-400">2.0</span></h1>
+            <p class="text-slate-400 text-xs mt-1 uppercase tracking-wider font-semibold">Lõimitud Noortepoliitika</p>
+        </div>
+        
+        <nav class="flex-1 mt-6 px-4 space-y-2">
+            <button onclick="switchView('view-dashboard', this)" class="w-full flex items-center px-4 py-3 text-left rounded-lg bg-blue-600 text-white transition-colors nav-btn">
+                <i class="fas fa-chart-pie w-6 text-center mr-2"></i> Peavaade
+            </button>
+            <button onclick="switchView('view-ai', this)" class="w-full flex items-center px-4 py-3 text-left rounded-lg text-slate-300 hover:bg-slate-800 transition-colors nav-btn">
+                <i class="fas fa-brain w-6 text-center mr-2"></i> Süvaanalüüs
+            </button>
+            <button onclick="switchView('view-history', this)" class="w-full flex items-center px-4 py-3 text-left rounded-lg text-slate-300 hover:bg-slate-800 transition-colors nav-btn">
+                <i class="fas fa-history w-6 text-center mr-2"></i> Ajalugu
+            </button>
+            <button onclick="switchView('view-settings', this)" class="w-full flex items-center px-4 py-3 text-left rounded-lg text-slate-300 hover:bg-slate-800 transition-colors nav-btn">
+                <i class="fas fa-sliders-h w-6 text-center mr-2"></i> Metoodika
+            </button>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center flex items-center justify-center">
+            <i class="fas fa-shield-alt mr-2"></i> Tõenduspõhine mootor
+        </div>
+    </aside>
+
+    <!-- PEAMINE SISU -->
+    <main class="flex-1 flex flex-col overflow-hidden relative">
+        
+        <!-- PÄIS -->
+        <header class="bg-white px-8 py-5 flex justify-between items-center z-0 border-b border-slate-200 shadow-sm">
+            <h2 id="page-title" class="text-xl font-bold text-slate-800">Peavaade: KPI-d ja trendid</h2>
+            <button onclick="fetchData()" id="refresh-btn" class="flex items-center text-sm bg-white hover:bg-slate-50 text-slate-600 px-4 py-2 rounded-lg transition border border-slate-200 shadow-sm font-medium">
+                <i class="fas fa-sync-alt mr-2 text-blue-600"></i> Värskenda andmeid
+            </button>
         </header>
 
-        <!-- DASHBOARD GRID -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <!-- VAATED -->
+        <div class="flex-1 overflow-y-auto p-8">
             
-            <!-- ANALÜÜSI JUHTPANEEL -->
-            <div class="md:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-lg font-bold mb-4">Loo uus analüüs</h2>
-                <div class="space-y-4">
-                    <select id="report-type" class="w-full p-2 border rounded">
-                        <option value="üldine">Üldine trendianalüüs</option>
-                        <option value="maine">Mainekujunduse audit</option>
-                    </select>
-                    <select id="source-filter" class="w-full p-2 border rounded">
-                        <option value="kõik">Kõik allikad</option>
-                    </select>
-                    <textarea id="ai-custom-prompt" placeholder="Erifookus (nt: analüüsi ERR-i vaimse tervise kajastust)" class="w-full p-2 border rounded h-24 text-sm"></textarea>
-                    <button onclick="generateNewReport()" class="w-full bg-blue-900 text-white py-2 rounded font-bold hover:bg-blue-800">Analüüsi</button>
+            <!-- 1. PEAVAADE (Ämblik ja numbrid) -->
+            <div id="view-dashboard" class="space-y-6">
+                <!-- Skooride kaardid -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="score-cards-container">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center items-center">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Inimkesksus</div>
+                        <div class="text-3xl font-extrabold text-blue-600" id="score-inim">--</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center items-center">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Elulisus</div>
+                        <div class="text-3xl font-extrabold text-emerald-500" id="score-elu">--</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center items-center">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Arusaadavus</div>
+                        <div class="text-3xl font-extrabold text-amber-500" id="score-arus">--</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center items-center">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Lõimitus</div>
+                        <div class="text-3xl font-extrabold text-purple-500" id="score-loim">--</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center items-center">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Tegevus</div>
+                        <div class="text-3xl font-extrabold text-rose-500" id="score-teg">--</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Radari graafik -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-2">Skooride jaotus (Radar)</h3>
+                        <div class="w-full max-w-md mx-auto flex-1 flex items-center justify-center">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Viimaste artiklite tabel -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col h-[450px]">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Viimased monitooritud tekstid</h3>
+                        <div class="overflow-y-auto flex-1 pr-2 space-y-3" id="recent-texts-container">
+                            <div class="animate-pulse flex space-x-4">
+                                <div class="flex-1 space-y-4 py-1">
+                                    <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                                    <div class="space-y-2">
+                                        <div class="h-3 bg-slate-200 rounded"></div>
+                                        <div class="h-3 bg-slate-200 rounded w-5/6"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- RAPORTI VÄLJUND -->
-            <div class="md:col-span-3 bg-white p-8 rounded-xl shadow-sm border border-gray-200 min-h-[500px]">
-                <div id="ai-insight-content" class="prose max-w-none text-gray-800">
-                    <p class="text-gray-400">Ootan Sinu käsku andmete analüüsimiseks...</p>
+            <!-- 2. SÜVAANALÜÜS (Uus AI moodul) -->
+            <div id="view-ai" class="hidden space-y-6 max-w-5xl mx-auto">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Määra analüüsi parameetrid</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Raporti fookus</label>
+                            <select id="report-type" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50">
+                                <option value="üldine">Üldine trendide ja lünkade analüüs</option>
+                                <option value="maine">Mainekujunduse audit</option>
+                                <option value="keel">Kommunikatsiooni arusaadavus</option>
+                                <option value="loimitus">Valdkondade lõimitus</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Allika filter</label>
+                            <select id="source-filter" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50">
+                                <option value="kõik">Kõik allikad</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Täpsustav juhis (valikuline)</label>
+                            <input type="text" id="ai-custom-prompt" placeholder="nt. Keskendu vaimsele tervisele..." class="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50">
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button onclick="generateNewReport()" id="generate-btn" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition flex items-center justify-center font-semibold shadow-sm">
+                            <span id="btn-text">Käivita tõenduspõhine analüüs</span>
+                            <i id="btn-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 min-h-[400px]">
+                    <h2 class="text-2xl font-extrabold mb-6 text-slate-800 border-b pb-4">Strateegiline Väljund</h2>
+                    <div id="ai-insight-content" class="prose max-w-none text-slate-700 text-sm md:text-base leading-relaxed">
+                        <div class="text-center text-slate-400 mt-10">
+                            <i class="fas fa-robot text-4xl mb-3 opacity-50"></i>
+                            <p>Vali parameetrid ja käivita analüüs.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- AJALOO VAADE -->
-        <div class="mt-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h2 class="text-xl font-bold mb-4">Analüüside ajalugu</h2>
-            <div id="history-container" class="space-y-4"></div>
-        </div>
-    </div>
+            <!-- 3. AJALUGU -->
+            <div id="view-history" class="hidden max-w-5xl mx-auto space-y-6">
+                <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-extrabold mb-6 text-slate-800 border-b pb-4">Analüüside Arhiiv</h2>
+                    <div id="history-container" class="space-y-6">
+                        <p class="text-slate-500">Laen arhiivi...</p>
+                    </div>
+                </div>
+            </div>
 
+            <!-- 4. METOODIKA / SEADED -->
+            <div id="view-settings" class="hidden max-w-4xl mx-auto space-y-6">
+                <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-extrabold mb-6 text-slate-800 border-b pb-4">Metoodika Koodiraamat</h2>
+                    <div class="space-y-6 text-slate-700 text-sm leading-relaxed">
+                        <p>Kõik analüüsid toetuvad standardiseeritud rubriigile, et välistada AI subjektiivsus.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <h4 class="font-bold text-blue-900 mb-2">Inimkesksus</h4>
+                                <p>10 = Noore vahetu hääl/tsitaat<br>5 = Noore vajaduse kirjeldus<br>1 = Ametnikukantseliit</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <h4 class="font-bold text-blue-900 mb-2">Lõimitus</h4>
+                                <p>10 = Sektoriteülene koostöö<br>1 = Ühe asutuse siseinfo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- RAKENDUSE LOOGIKA -->
     <script>
-        const SCRIPT_URL = "SINU_GOOGLE_APPS_SCRIPT_URL";
+        // ==========================================
+        // 1. SEADISTUSED
+        // ==========================================
+        const SCRIPT_URL = "SINU_GOOGLE_APPS_SCRIPT_WEB_APP_URL_SIIA"; 
+        let radarChartInstance = null; 
 
-        async function init() {
-            // Lae allikad tabelist ja täida rippmenüü
-            const resp = await fetch(SCRIPT_URL);
-            const data = await resp.json();
-            const sources = [...new Set(data.data.map(d => d.source))];
+        // ==========================================
+        // 2. NAVIGATSIOON
+        // ==========================================
+        function switchView(viewId, btnElement) {
+            ['view-dashboard', 'view-ai', 'view-history', 'view-settings'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-slate-300');
+            });
+            
+            if (btnElement) {
+                btnElement.classList.remove('text-slate-300');
+                btnElement.classList.add('bg-blue-600', 'text-white');
+            }
+            
+            const titles = {
+                'view-dashboard': 'Peavaade: KPI-d ja trendid',
+                'view-ai': 'Süvaanalüüs ja raportid',
+                'view-history': 'Analüüside arhiiv',
+                'view-settings': 'Strateegiline metoodika'
+            };
+            document.getElementById('page-title').innerText = titles[viewId];
+        }
+
+        // ==========================================
+        // 3. ANDMETE LAADIMINE
+        // ==========================================
+        async function fetchData() {
+            const btn = document.getElementById('refresh-btn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2 text-blue-600"></i> Laen...';
+            
+            try {
+                const response = await fetch(SCRIPT_URL + "?t=" + Date.now());
+                const result = await response.json();
+                
+                const tableData = result.data || result;
+                
+                renderDashboard(tableData);
+                populateSources(tableData);
+                
+                if (result.history) {
+                    renderHistory(result.history);
+                }
+
+            } catch (error) {
+                console.error("Viga andmete laadimisel:", error);
+                document.getElementById('recent-texts-container').innerHTML = '<p class="text-red-500 p-4">Ühenduse viga. Kontrolli URL-i.</p>';
+            } finally {
+                btn.innerHTML = '<i class="fas fa-sync-alt mr-2 text-blue-600"></i> Värskenda andmeid';
+            }
+        }
+
+        // ==========================================
+        // 4. ÄMBLIK-RADAR JA SKOORID
+        // ==========================================
+        function renderDashboard(data) {
+            if (!data || data.length === 0) return;
+
+            let sums = { inim: 0, elu: 0, arus: 0, loim: 0, teg: 0 };
+            let count = data.length;
+
+            data.forEach(row => {
+                sums.inim += Number(row.inimkesksus) || 0;
+                sums.elu += Number(row.elulisus) || 0;
+                sums.arus += Number(row.arusaadavus) || 0;
+                sums.loim += Number(row.loimitus) || 0;
+                sums.teg += Number(row.tegevusele_suunatus || row.tegevus) || 0;
+            });
+
+            const avgs = [
+                (sums.inim / count).toFixed(1),
+                (sums.elu / count).toFixed(1),
+                (sums.arus / count).toFixed(1),
+                (sums.loim / count).toFixed(1),
+                (sums.teg / count).toFixed(1)
+            ];
+
+            // Uuenda numbreid kaartidel
+            document.getElementById('score-inim').innerText = avgs[0];
+            document.getElementById('score-elu').innerText = avgs[1];
+            document.getElementById('score-arus').innerText = avgs[2];
+            document.getElementById('score-loim').innerText = avgs[3];
+            document.getElementById('score-teg').innerText = avgs[4];
+
+            // Joonista Radar
+            const ctx = document.getElementById('radarChart');
+            if (radarChartInstance) radarChartInstance.destroy();
+            
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Inimkesksus', 'Elulisus', 'Arusaadavus', 'Lõimitus', 'Tegevus'],
+                    datasets: [{
+                        label: 'Süsteemi keskmine',
+                        data: avgs,
+                        backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                        borderColor: 'rgba(37, 99, 235, 0.8)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#2563eb',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#2563eb'
+                    }]
+                },
+                options: {
+                    scales: { r: { min: 0, max: 10, ticks: { stepSize: 2 } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Täida viimaste tekstide loend
+            const recentContainer = document.getElementById('recent-texts-container');
+            let html = '';
+            data.slice(-15).reverse().forEach(row => {
+                const title = row.title || row.pealkiri || 'Nimetu';
+                const source = row.source || row.allikas || 'Teadmata allikas';
+                const date = row.date ? new Date(row.date).toLocaleDateString('et-EE') : '';
+                
+                html += `
+                <div class="p-4 bg-slate-50 rounded-lg border border-slate-100 hover:border-blue-200 transition">
+                    <a href="${row.url || '#'}" target="_blank" class="text-sm font-bold text-blue-700 hover:underline block mb-1">${title}</a>
+                    <div class="text-xs text-slate-500 font-medium">
+                        <i class="fas fa-newspaper mr-1"></i> ${source} 
+                        ${date ? `<span class="mx-2">•</span> <i class="far fa-calendar mr-1"></i> ${date}` : ''}
+                    </div>
+                </div>`;
+            });
+            recentContainer.innerHTML = html;
+        }
+
+        // ==========================================
+        // 5. ALLIKATE FILTRI TÄITMINE
+        // ==========================================
+        function populateSources(data) {
             const select = document.getElementById('source-filter');
+            // Säilita "Kõik allikad"
+            select.innerHTML = '<option value="kõik">Kõik allikad</option>';
+            
+            const sources = [...new Set(data.map(row => row.source || row.allikas).filter(Boolean))].sort();
             sources.forEach(s => {
                 const opt = document.createElement('option');
                 opt.value = s; opt.textContent = s;
                 select.appendChild(opt);
             });
-            // Lae ka ajalugu
-            if(data.history) renderHistory(data.history);
         }
 
+        // ==========================================
+        // 6. AI RAPORTI GENEREERIMINE
+        // ==========================================
         async function generateNewReport() {
+            const btnText = document.getElementById('btn-text');
+            const spinner = document.getElementById('btn-spinner');
             const content = document.getElementById('ai-insight-content');
-            content.innerHTML = "Analüüsin andmeid vastavalt metoodilisele rubriigile...";
             
-            const resp = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: "generate",
-                    reportType: document.getElementById('report-type').value,
-                    sourceFilter: document.getElementById('source-filter').value,
-                    customPrompt: document.getElementById('ai-custom-prompt').value
-                })
-            });
-            const res = await resp.json();
-            content.innerHTML = res.insight;
-            // Uuenda ka ajalugu
-            location.reload(); 
+            btnText.innerText = "Töötan andmetega...";
+            spinner.classList.remove('hidden');
+            document.getElementById('generate-btn').disabled = true;
+
+            content.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12">
+                    <i class="fas fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
+                    <p class="text-slate-500 font-medium animate-pulse">Koostan analüüsi ja kontrollin viiteid...</p>
+                </div>`;
+
+            const payload = {
+                action: "generate",
+                reportType: document.getElementById('report-type').value,
+                sourceFilter: document.getElementById('source-filter').value,
+                customPrompt: document.getElementById('ai-custom-prompt').value
+            };
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success || result.insight) {
+                    content.innerHTML = result.insight || result.reply || "Raport valmis.";
+                    // Värskendame taustal ajalugu, et uus raport kohe näha oleks
+                    fetchData();
+                } else {
+                    content.innerHTML = `<p class="text-red-500 bg-red-50 p-4 rounded-lg">Viga: ${result.error}</p>`;
+                }
+            } catch (error) {
+                content.innerHTML = `<p class="text-red-500 bg-red-50 p-4 rounded-lg">Ühenduse viga Web Appiga.</p>`;
+            } finally {
+                btnText.innerText = "Käivita tõenduspõhine analüüs";
+                spinner.classList.add('hidden');
+                document.getElementById('generate-btn').disabled = false;
+            }
         }
 
+        // ==========================================
+        // 7. AJALOO RENDERDAMINE
+        // ==========================================
         function renderHistory(history) {
             const container = document.getElementById('history-container');
-            container.innerHTML = history.reverse().map(item => `
-                <div class="p-4 border-b">
-                    <span class="text-xs text-gray-400">${item.date}</span>
-                    <div class="text-sm mt-1">${item.content.substring(0, 150)}...</div>
-                </div>
-            `).join('');
+            if (!history || history.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 italic">Arhiiv on tühi.</p>';
+                return;
+            }
+
+            let html = '';
+            // Näitame viimaseid eespool
+            [...history].reverse().forEach(item => {
+                const dateStr = item.date ? new Date(item.date).toLocaleString('et-EE') : 'Teadmata aeg';
+                html += `
+                <div class="bg-slate-50 p-6 rounded-lg border border-slate-100">
+                    <div class="text-xs font-bold text-blue-600 mb-3 border-b border-slate-200 pb-2"><i class="far fa-clock mr-1"></i> ${dateStr}</div>
+                    <div class="prose max-w-none text-sm text-slate-700">${item.content}</div>
+                </div>`;
+            });
+            container.innerHTML = html;
         }
 
-        init();
+        // KÄIVITUS LAADIMISEL
+        document.addEventListener('DOMContentLoaded', fetchData);
+
     </script>
 </body>
 </html>

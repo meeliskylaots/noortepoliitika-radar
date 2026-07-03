@@ -265,11 +265,104 @@
             fetchData();
         });
 
-        // ------------------------------------------------------------------------
+       // ------------------------------------------------------------------------
         // KUI SUL ON OMA GRAAFIKUTE JOONISTAMISE FUNKTSIOONID 
         // (nagu renderDashboard jne), SIIS KLEEB NEED SIIA ALLA:
         // ------------------------------------------------------------------------
 
+        function renderDashboard(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('recent-texts-container').innerHTML = '<p class="text-gray-500">Andmeid ei leitud.</p>';
+                return;
+            }
+
+            // 1. Arvuta keskmised skoorid
+            let sumInim = 0, sumElu = 0, sumArus = 0, sumLoim = 0, sumTeg = 0;
+            let count = data.length;
+
+            data.forEach(row => {
+                sumInim += Number(row.inimkesksus) || 0;
+                sumElu += Number(row.elulisus) || 0;
+                sumArus += Number(row.arusaadavus) || 0;
+                sumLoim += Number(row.loimitus) || 0;
+                sumTeg += Number(row.tegevusele_suunatus || row.tegevus) || 0;
+            });
+
+            const avgInim = (sumInim / count).toFixed(1);
+            const avgElu = (sumElu / count).toFixed(1);
+            const avgArus = (sumArus / count).toFixed(1);
+            const avgLoim = (sumLoim / count).toFixed(1);
+            const avgTeg = (sumTeg / count).toFixed(1);
+
+            // Uuenda skoorikaardid
+            const scoreContainer = document.getElementById('score-cards-container');
+            if (scoreContainer) {
+                scoreContainer.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Inimkesksus</div><div class="text-3xl font-bold text-blue-600">${avgInim}</div></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Elulisus</div><div class="text-3xl font-bold text-green-600">${avgElu}</div></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Arusaadavus</div><div class="text-3xl font-bold text-yellow-600">${avgArus}</div></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Lõimitus</div><div class="text-3xl font-bold text-purple-600">${avgLoim}</div></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"><div class="text-xs text-gray-500 font-bold uppercase mb-1">Tegevus</div><div class="text-3xl font-bold text-red-600">${avgTeg}</div></div>
+                `;
+            }
+
+            // 2. Joonista Radari graafik
+            const ctx = document.getElementById('radarChart');
+            if (ctx) {
+                if (window.radarChartInstance) {
+                    window.radarChartInstance.destroy();
+                }
+                window.radarChartInstance = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Inimkesksus', 'Elulisus', 'Arusaadavus', 'Lõimitus', 'Tegevus'],
+                        datasets: [{
+                            label: 'Keskmine skoor',
+                            data: [avgInim, avgElu, avgArus, avgLoim, avgTeg],
+                            backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                            borderColor: 'rgba(37, 99, 235, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(37, 99, 235, 1)'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                min: 0,
+                                max: 10,
+                                ticks: { stepSize: 2 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 3. Täida viimaste tekstide tabel
+            const recentContainer = document.getElementById('recent-texts-container');
+            if (recentContainer) {
+                let html = '<div class="space-y-4">';
+                const recentData = data.slice(-10).reverse();
+                
+                recentData.forEach(row => {
+                    const title = row.title || row.pealkiri || 'Pealkiri puudub';
+                    const source = row.source || row.allikas || 'Allikas';
+                    const url = row.url || '#';
+                    const tolge = row.tolge || 'Tõlge puudub';
+                    const date = row.date ? new Date(row.date).toLocaleDateString('et-EE') : '';
+
+                    html += `
+                    <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex justify-between items-start mb-2">
+                            <a href="${url}" target="_blank" class="text-blue-600 font-medium hover:underline text-sm">${title}</a>
+                        </div>
+                        <div class="text-xs text-gray-500 mb-2"><i class="fas fa-newspaper mr-1"></i> ${source} &nbsp;|&nbsp; <i class="far fa-calendar mr-1"></i> ${date}</div>
+                        <p class="text-sm text-gray-700 italic border-l-2 border-gray-300 pl-2">"${tolge}"</p>
+                    </div>`;
+                });
+                html += '</div>';
+                recentContainer.innerHTML = html;
+            }
+        }
     </script>
 </body>
 </html>

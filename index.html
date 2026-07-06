@@ -16,7 +16,6 @@
         .prose li { margin-bottom: 0.25rem; }
         .prose h3 { font-weight: 700; margin-top: 1.25rem; margin-bottom: 0.5rem; color: #0f172a; }
         .prose b { color: #1e3a8a; }
-        /* Uus: linkide disain */
         .prose a { color: #2563eb; text-decoration: underline; font-weight: 500; transition: color 0.2s; }
         .prose a:hover { color: #1e3a8a; text-decoration: none; }
     </style>
@@ -63,24 +62,24 @@
             <div id="view-dashboard" class="space-y-6">
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="score-cards-container">
                     <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Inimkesksus</div>
-                        <div class="text-3xl font-black text-blue-600" id="score-inim">--</div>
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 text-center">Sihtgrupikesksus</div>
+                        <div class="text-3xl font-black text-blue-600" id="score-siht">--</div>
                     </div>
                     <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Elulisus</div>
-                        <div class="text-3xl font-black text-emerald-600" id="score-elu">--</div>
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 text-center">Lõimitus</div>
+                        <div class="text-3xl font-black text-emerald-600" id="score-loim">--</div>
                     </div>
                     <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Arusaadavus</div>
-                        <div class="text-3xl font-black text-amber-600" id="score-arus">--</div>
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 text-center">Tõenduspõhisus</div>
+                        <div class="text-3xl font-black text-amber-600" id="score-toend">--</div>
                     </div>
                     <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Lõimitus</div>
-                        <div class="text-3xl font-black text-purple-600" id="score-loim">--</div>
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 text-center">Mainemõju</div>
+                        <div class="text-3xl font-black text-purple-600" id="score-maine">--</div>
                     </div>
                     <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Tegevus</div>
-                        <div class="text-3xl font-black text-rose-600" id="score-teg">--</div>
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 text-center">Arusaadavus</div>
+                        <div class="text-3xl font-black text-rose-600" id="score-arus">--</div>
                     </div>
                 </div>
 
@@ -123,7 +122,7 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Avatud täpsustav juhis</label>
-                            <input type="text" id="ai-custom-prompt" placeholder="nt: analüüsi ainult ERR-i viimase 6 kuu teemasid" class="w-full p-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:border-blue-500">
+                            <input type="text" id="ai-custom-prompt" placeholder="nt: analüüsi ainult ERR-i teemasid" class="w-full p-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:border-blue-500">
                         </div>
                     </div>
                     
@@ -171,7 +170,7 @@
                             </div>
                             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
                                 <h4 class="font-bold text-blue-900 mb-1.5 text-xs uppercase tracking-wide">Tõenduspõhine koodiraamat</h4>
-                                <p class="text-slate-700">Iga artikli analüüsimisel hindab tehisintellekt skoore vahemikus 1-10 rangete reeglite alusel, tuvastades kantseliidi määra, noorte vahetu hääle olemasolu ning sõnumi tüübi.</p>
+                                <p class="text-slate-700">Iga artikli analüüsimisel hindab tehisintellekt skoore vahemikus 1-10 rangete reeglite alusel, tuvastades lõimituse, tõenduspõhisuse ning sihtgrupikesksuse.</p>
                             </div>
                         </div>
                     </div>
@@ -253,60 +252,55 @@
                 return;
             }
 
-            // Abifunktsioon keskmiste arvutamiseks
             function calcAverages(dataset) {
-                let sums = { inim: 0, elu: 0, arus: 0, loim: 0, teg: 0 };
+                let sums = { siht: 0, loim: 0, toend: 0, maine: 0, arus: 0 };
                 let count = dataset.length;
                 if (count === 0) return [0, 0, 0, 0, 0];
                 
                 dataset.forEach(row => {
-                    sums.inim += Number(row.inimkesksus) || 0;
-                    sums.elu += Number(row.elulisus) || 0;
+                    sums.siht += Number(row.sihtgrupikesksus) || 0;
+                    sums.loim += Number(row.loimitud_noortepoliitika) || 0;
+                    sums.toend += Number(row.toenduspohisus) || 0;
+                    sums.maine += Number(row.mainemoju) || 0;
                     sums.arus += Number(row.arusaadavus) || 0;
-                    sums.loim += Number(row.loimitus) || 0;
-                    sums.teg += Number(row.tegevusele_suunatus || row.tegevus) || 0;
                 });
                 
                 return [
-                    (sums.inim / count).toFixed(1),
-                    (sums.elu / count).toFixed(1),
-                    (sums.arus / count).toFixed(1),
+                    (sums.siht / count).toFixed(1),
                     (sums.loim / count).toFixed(1),
-                    (sums.teg / count).toFixed(1)
+                    (sums.toend / count).toFixed(1),
+                    (sums.maine / count).toFixed(1),
+                    (sums.arus / count).toFixed(1)
                 ];
             }
 
-            // Jagame andmed kaheks: kõikide aegade keskmine ja viimane trend (viimased 10)
             const allAverages = calcAverages(data);
             const recentData = data.slice(-10);
             const recentAverages = calcAverages(recentData);
 
-            // Skoorikaartidele paneme viimase trendi aktuaalsed numbrid
-            document.getElementById('score-inim').innerText = recentAverages[0];
-            document.getElementById('score-elu').innerText = recentAverages[1];
-            document.getElementById('score-arus').innerText = recentAverages[2];
-            document.getElementById('score-loim').innerText = recentAverages[3];
-            document.getElementById('score-teg').innerText = recentAverages[4];
+            document.getElementById('score-siht').innerText = recentAverages[0];
+            document.getElementById('score-loim').innerText = recentAverages[1];
+            document.getElementById('score-toend').innerText = recentAverages[2];
+            document.getElementById('score-maine').innerText = recentAverages[3];
+            document.getElementById('score-arus').innerText = recentAverages[4];
 
-            // Metoodika selgitused infomullide jaoks
             const getTooltipDesc = (metric, value) => {
                 const num = parseFloat(value);
-                if (metric === 'Inimkesksus') return num >= 7 ? 'Tugev: noore hääl ja vajadus esil' : (num >= 4 ? 'Keskpärane: ametkondlik vaade' : 'Nõrk: elukauge kantseliit');
-                if (metric === 'Elulisus') return num >= 7 ? 'Tugev: selgelt seotud reaalse eluga' : (num >= 4 ? 'Keskpärane: pigem teoreetiline jutt' : 'Nõrk: abstraktne ja bürokraatlik');
-                if (metric === 'Arusaadavus') return num >= 7 ? 'Tugev: selge ja lihtne keel' : (num >= 4 ? 'Keskpärane: kohati liiga keeruline' : 'Nõrk: raskesti loetav');
-                if (metric === 'Lõimitus') return num >= 7 ? 'Tugev: laiem sektoriteülene vaade' : (num >= 4 ? 'Keskpärane: asutusekeskne info' : 'Nõrk: puudub laiem kontekst');
-                if (metric === 'Tegevus') return num >= 7 ? 'Tugev: selge üleskutse tegutsema' : (num >= 4 ? 'Keskpärane: kuiv infoedastus' : 'Nõrk: väga passiivne tekst');
+                if (metric === 'Sihtgrupikesksus') return num >= 7 ? 'Tugev: fookuses noore/spetsialisti reaalne elu' : (num >= 4 ? 'Keskpärane: ametkondlik ja asutusekeskne vaade' : 'Nõrk: kuiv ja elukauge bürokraatia');
+                if (metric === 'Lõimitud noortepoliitika') return num >= 7 ? 'Tugev: seob tervikuks kooli, heaolu ja tööhõive' : (num >= 4 ? 'Keskpärane: viitab koostööle, kuid püsib silotornis' : 'Nõrk: täielikult isoleeritud kitsas nišš');
+                if (metric === 'Tõenduspõhisus') return num >= 7 ? 'Tugev: toetub uuringutele, andmetele ja statistikale' : (num >= 4 ? 'Keskpärane: väited on korrektsed, kuid viideteta' : 'Nõrk: puhas arvamus, emotsioon või loosung');
+                if (metric === 'Mainemõju') return num >= 7 ? 'Tugev: kujundab usaldust ja näitab kompetentsust' : (num >= 4 ? 'Keskpärane: neutraalne ja kuiv infoedastus' : 'Nõrk: tekitab ebakindlust või on kaitsepositsioonil');
+                if (metric === 'Arusaadavus') return num >= 7 ? 'Tugev: selge, täpne ja kõigile loetav keel' : (num >= 4 ? 'Keskpärane: kohati koormatud kantseliidiga' : 'Nõrk: raskesti mõistetav ametnikukeel');
                 return '';
             };
 
-            // Chart.js graafiku joonistamine kahe andmestikuga
             const ctx = document.getElementById('radarChart');
             if (radarChartInstance) radarChartInstance.destroy();
             
             radarChartInstance = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['Inimkesksus', 'Elulisus', 'Arusaadavus', 'Lõimitus', 'Tegevus'],
+                    labels: ['Sihtgrupikesksus', 'Lõimitud noortepoliitika', 'Tõenduspõhisus', 'Mainemõju', 'Arusaadavus'],
                     datasets: [
                         {
                             label: 'Lähiaja trend (viimased 10)',
@@ -323,7 +317,7 @@
                             backgroundColor: 'transparent',
                             borderColor: 'rgba(148, 163, 184, 0.6)',
                             borderWidth: 2,
-                            borderDash: [5, 5], // Teeb joone katkendlikuks
+                            borderDash: [5, 5],
                             pointBackgroundColor: '#94a3b8',
                             pointHoverRadius: 6
                         }
@@ -346,7 +340,6 @@
                                     const val = context.raw;
                                     const metric = context.chart.data.labels[context.dataIndex];
                                     const desc = getTooltipDesc(metric, val);
-                                    // Tagastame kaks rida teksti: numbri ja metoodilise selgituse
                                     return [`Skoor: ${val}`, desc];
                                 }
                             }
@@ -355,7 +348,6 @@
                 }
             });
 
-            // Viimaste tekstide loendi täitmine
             const recentContainer = document.getElementById('recent-texts-container');
             let html = '';
             recentData.reverse().forEach(row => {
@@ -374,6 +366,7 @@
             });
             recentContainer.innerHTML = html;
         }
+
         // ==========================================
         // FILTRI DÜNAAMILINE TÄITMINE
         // ==========================================

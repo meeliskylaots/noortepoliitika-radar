@@ -244,7 +244,7 @@
             }
         }
 
-        // ==========================================
+       // ==========================================
         // ARVUTUSED JA RADAR-CHART
         // ==========================================
         function renderDashboard(data) {
@@ -253,33 +253,53 @@
                 return;
             }
 
-            let sums = { inim: 0, elu: 0, arus: 0, loim: 0, teg: 0 };
-            let count = data.length;
+            // Abifunktsioon keskmiste arvutamiseks
+            function calcAverages(dataset) {
+                let sums = { inim: 0, elu: 0, arus: 0, loim: 0, teg: 0 };
+                let count = dataset.length;
+                if (count === 0) return [0, 0, 0, 0, 0];
+                
+                dataset.forEach(row => {
+                    sums.inim += Number(row.inimkesksus) || 0;
+                    sums.elu += Number(row.elulisus) || 0;
+                    sums.arus += Number(row.arusaadavus) || 0;
+                    sums.loim += Number(row.loimitus) || 0;
+                    sums.teg += Number(row.tegevusele_suunatus || row.tegevus) || 0;
+                });
+                
+                return [
+                    (sums.inim / count).toFixed(1),
+                    (sums.elu / count).toFixed(1),
+                    (sums.arus / count).toFixed(1),
+                    (sums.loim / count).toFixed(1),
+                    (sums.teg / count).toFixed(1)
+                ];
+            }
 
-            data.forEach(row => {
-                sums.inim += Number(row.inimkesksus) || 0;
-                sums.elu += Number(row.elulisus) || 0;
-                sums.arus += Number(row.arusaadavus) || 0;
-                sums.loim += Number(row.loimitus) || 0;
-                sums.teg += Number(row.tegevusele_suunatus || row.tegevus) || 0;
-            });
+            // Jagame andmed kaheks: kõikide aegade keskmine ja viimane trend (viimased 10)
+            const allAverages = calcAverages(data);
+            const recentData = data.slice(-10);
+            const recentAverages = calcAverages(recentData);
 
-            const avgs = [
-                (sums.inim / count).toFixed(1),
-                (sums.elu / count).toFixed(1),
-                (sums.arus / count).toFixed(1),
-                (sums.loim / count).toFixed(1),
-                (sums.teg / count).toFixed(1)
-            ];
+            // Skoorikaartidele paneme viimase trendi aktuaalsed numbrid
+            document.getElementById('score-inim').innerText = recentAverages[0];
+            document.getElementById('score-elu').innerText = recentAverages[1];
+            document.getElementById('score-arus').innerText = recentAverages[2];
+            document.getElementById('score-loim').innerText = recentAverages[3];
+            document.getElementById('score-teg').innerText = recentAverages[4];
 
-            // Skoorikaartide täitmine
-            document.getElementById('score-inim').innerText = avgs[0];
-            document.getElementById('score-elu').innerText = avgs[1];
-            document.getElementById('score-arus').innerText = avgs[2];
-            document.getElementById('score-loim').innerText = avgs[3];
-            document.getElementById('score-teg').innerText = avgs[4];
+            // Metoodika selgitused infomullide jaoks
+            const getTooltipDesc = (metric, value) => {
+                const num = parseFloat(value);
+                if (metric === 'Inimkesksus') return num >= 7 ? 'Tugev: noore hääl ja vajadus esil' : (num >= 4 ? 'Keskpärane: ametkondlik vaade' : 'Nõrk: elukauge kantseliit');
+                if (metric === 'Elulisus') return num >= 7 ? 'Tugev: selgelt seotud reaalse eluga' : (num >= 4 ? 'Keskpärane: pigem teoreetiline jutt' : 'Nõrk: abstraktne ja bürokraatlik');
+                if (metric === 'Arusaadavus') return num >= 7 ? 'Tugev: selge ja lihtne keel' : (num >= 4 ? 'Keskpärane: kohati liiga keeruline' : 'Nõrk: raskesti loetav');
+                if (metric === 'Lõimitus') return num >= 7 ? 'Tugev: laiem sektoriteülene vaade' : (num >= 4 ? 'Keskpärane: asutusekeskne info' : 'Nõrk: puudub laiem kontekst');
+                if (metric === 'Tegevus') return num >= 7 ? 'Tugev: selge üleskutse tegutsema' : (num >= 4 ? 'Keskpärane: kuiv infoedastus' : 'Nõrk: väga passiivne tekst');
+                return '';
+            };
 
-            // Chart.js graafik
+            // Chart.js graafiku joonistamine kahe andmestikuga
             const ctx = document.getElementById('radarChart');
             if (radarChartInstance) radarChartInstance.destroy();
             
@@ -287,27 +307,58 @@
                 type: 'radar',
                 data: {
                     labels: ['Inimkesksus', 'Elulisus', 'Arusaadavus', 'Lõimitus', 'Tegevus'],
-                    datasets: [{
-                        data: avgs,
-                        backgroundColor: 'rgba(30, 58, 138, 0.12)',
-                        borderColor: 'rgba(30, 58, 138, 0.85)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#1e3a8a',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#1e3a8a'
-                    }]
+                    datasets: [
+                        {
+                            label: 'Lähiaja trend (viimased 10)',
+                            data: recentAverages,
+                            backgroundColor: 'rgba(30, 58, 138, 0.15)',
+                            borderColor: 'rgba(30, 58, 138, 0.9)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#1e3a8a',
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Kõigi aegade keskmine',
+                            data: allAverages,
+                            backgroundColor: 'transparent',
+                            borderColor: 'rgba(148, 163, 184, 0.6)',
+                            borderWidth: 2,
+                            borderDash: [5, 5], // Teeb joone katkendlikuks
+                            pointBackgroundColor: '#94a3b8',
+                            pointHoverRadius: 6
+                        }
+                    ]
                 },
                 options: {
                     scales: { r: { min: 0, max: 10, ticks: { stepSize: 2 } } },
-                    plugins: { legend: { display: false } }
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom',
+                            labels: { boxWidth: 12, usePointStyle: true, padding: 20 }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 13 },
+                            bodyFont: { size: 12 },
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.raw;
+                                    const metric = context.chart.data.labels[context.dataIndex];
+                                    const desc = getTooltipDesc(metric, val);
+                                    // Tagastame kaks rida teksti: numbri ja metoodilise selgituse
+                                    return [`Skoor: ${val}`, desc];
+                                }
+                            }
+                        }
+                    }
                 }
             });
 
-            // Tekstide loend
+            // Viimaste tekstide loendi täitmine
             const recentContainer = document.getElementById('recent-texts-container');
             let html = '';
-            data.slice(-15).reverse().forEach(row => {
+            recentData.reverse().forEach(row => {
                 const title = row.title || row.pealkiri || 'Pealkiri puudub';
                 const source = row.source || row.allikas || 'Teadmata allikas';
                 const date = row.date ? new Date(row.date).toLocaleDateString('et-EE') : '';
@@ -323,7 +374,6 @@
             });
             recentContainer.innerHTML = html;
         }
-
         // ==========================================
         // FILTRI DÜNAAMILINE TÄITMINE
         // ==========================================

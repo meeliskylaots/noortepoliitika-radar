@@ -98,23 +98,56 @@
             `).join('');
         }
 
+       let controller = new AbortController();
+
         async function generateReport() {
             const btn = document.getElementById('gen-btn');
             const content = document.getElementById('ai-insight-content');
-            btn.disabled = true;
-            content.innerHTML = '<p class="animate-pulse">Analüüsin...</p>';
             
-            const res = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: "generate",
-                    reportType: document.getElementById('report-type').value,
-                    customPrompt: document.getElementById('ai-custom-prompt').value
-                })
-            });
-            const data = await res.json();
-            content.innerHTML = data.insight;
-            btn.disabled = false;
+            // Loome uue kontrollija, et saaksime eelmist päringut katkestada
+            controller = new AbortController();
+            
+            btn.innerText = "Analüüsin...";
+            btn.disabled = true;
+            
+            // Loome "Katkesta" nupu
+            const abortBtn = document.createElement('button');
+            abortBtn.innerText = "Katkesta analüüs";
+            abortBtn.className = "w-full mt-2 bg-red-600 text-white py-2 rounded-lg text-xs font-bold hover:bg-red-700";
+            abortBtn.id = "abort-btn";
+            abortBtn.onclick = () => {
+                controller.abort();
+                content.innerHTML = '<p class="text-red-600 text-sm">Analüüs katkestatud.</p>';
+                btn.innerText = "Käivita analüüs";
+                btn.disabled = false;
+                abortBtn.remove();
+            };
+            btn.parentNode.appendChild(abortBtn);
+
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    signal: controller.signal, // See ongi katkestamise võti
+                    body: JSON.stringify({
+                        action: "generate",
+                        reportType: document.getElementById('report-type').value,
+                        customPrompt: document.getElementById('ai-custom-prompt').value
+                    })
+                });
+                const data = await res.json();
+                content.innerHTML = data.insight;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    console.log('Kasutaja katkestas.');
+                } else {
+                    content.innerHTML = '<p class="text-red-500">Viga: ' + err.message + '</p>';
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Käivita analüüs";
+                const existingAbortBtn = document.getElementById('abort-btn');
+                if (existingAbortBtn) existingAbortBtn.remove();
+            }
         }
 
         function renderHistory(history) {

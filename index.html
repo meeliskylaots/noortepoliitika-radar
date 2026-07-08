@@ -24,9 +24,11 @@
                 <p>Laadin andmeid...</p>
             </div>
             <div class="col-span-2 bg-white p-6 rounded shadow">
-                <select id="report-type" class="w-full border p-2 mb-4">
-                    <option value="maine">Mainekujunduse audit</option>
-                </select>
+               <select id="report-type" class="w-full border p-2 mb-4">
+    <option value="maine">Mainekujunduse audit</option>
+    <option value="loimitus">Valdkondade lõimituse raport</option>
+    <option value="vabavorm">VABA PÄRING</option>
+</select>
                 <textarea id="ai-custom-prompt" class="w-full border p-2 mb-4" placeholder="Sinu suunised AI-le..."></textarea>
                 <button onclick="generateReport()" id="gen-btn" class="w-full bg-blue-900 text-white py-2 rounded">Käivita analüüs</button>
                 <div id="ai-insight-content" class="mt-6 prose"></div>

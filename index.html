@@ -2,115 +2,80 @@
 <html lang="et">
 <head>
     <meta charset="UTF-8">
-    <title>RADAR 3.0 | Strateegiline Seire</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RADAR 3.4 | Strateegiline Juhtimispaneel</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .card { @apply bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-md; }
+        .sidebar-item { @apply w-full text-left p-4 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all; }
+    </style>
 </head>
-<body class="bg-slate-50 flex h-screen">
+<body class="bg-slate-50 min-h-screen flex">
 
-    <aside class="w-64 bg-slate-950 text-white p-6">
-        <h1 class="text-2xl font-black">RADAR <span class="text-blue-500">3.0</span></h1>
-        <nav class="mt-8 space-y-2">
-            <button onclick="switchView('view-main')" class="w-full text-left p-3 bg-blue-600 rounded">Töölaud</button>
-            <button onclick="switchView('view-history')" class="w-full text-left p-3 hover:bg-slate-900 rounded">Arhiiv</button>
+    <!-- Külgpaneel -->
+    <aside class="w-72 bg-slate-950 text-white p-8 flex flex-col fixed h-full">
+        <div class="mb-12">
+            <h1 class="text-2xl font-bold tracking-tight text-white">RADAR <span class="text-blue-500">3.4</span></h1>
+            <p class="text-slate-500 text-[11px] font-semibold uppercase tracking-widest mt-1">Strateegiline Seire</p>
+        </div>
+        <nav class="space-y-2 flex-1">
+            <button class="w-full text-left p-4 bg-blue-600 text-white rounded-xl font-semibold shadow-lg shadow-blue-900/20">Töölaud</button>
+            <button class="sidebar-item">Arhiiv</button>
+            <button class="sidebar-item">Seaded</button>
         </nav>
+        <div class="text-slate-600 text-[10px] mt-auto">
+            &copy; 2026 Strateegiline Agent
+        </div>
     </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto">
-        <div id="view-main" class="grid grid-cols-3 gap-8">
-            <div id="recent-texts-container" class="col-span-1 space-y-2">
-                <h3 class="text-xs font-bold uppercase text-slate-400">Allikad</h3>
-                <p>Laadin andmeid...</p>
+    <!-- Põhivaade -->
+    <main class="flex-1 ml-72 p-12">
+        <header class="flex justify-between items-center mb-12">
+            <div>
+                <h2 class="text-3xl font-bold text-slate-900">Tere tulemast, Peaekspert</h2>
+                <p class="text-slate-500">Tänane strateegiline ülevaade on valmis.</p>
             </div>
-            <div class="col-span-2 bg-white p-6 rounded shadow">
-                <select id="report-type" class="w-full border p-2 mb-4">
-                    <option value="maine">Mainekujunduse audit</option>
-                    <option value="loimitus">Valdkondade lõimituse raport</option>
-                    <option value="vabavorm">VABA PÄRING</option>
-                </select>
-                <textarea id="ai-custom-prompt" class="w-full border p-2 mb-4" placeholder="Sinu suunised AI-le..."></textarea>
-                <button onclick="generateReport()" id="gen-btn" class="w-full bg-blue-900 text-white py-2 rounded">Käivita analüüs</button>
-                
-                <div id="ai-insight-content" class="mt-6 prose"></div>
-                <div id="action-btns" class="hidden flex gap-2 mt-4">
-                    <button onclick="window.print()" class="bg-gray-200 px-3 py-1 rounded text-xs font-bold">Salvesta PDF</button>
-                    <button onclick="saadaMeiliga()" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">Saada e-mailile</button>
+            <div class="bg-white px-6 py-3 rounded-full border shadow-sm text-sm font-medium text-slate-600">
+                <span class="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>Süsteem aktiivne
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            
+            <!-- Analüüsi sisestus -->
+            <div class="space-y-6">
+                <div class="card">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Uus Analüüs</label>
+                    <select class="w-full bg-slate-50 border-0 p-4 rounded-2xl mb-4 font-medium text-slate-900 focus:ring-2 focus:ring-blue-500">
+                        <option>Mainekujunduse audit</option>
+                        <option>Valdkondade lõimituse raport</option>
+                    </select>
+                    <textarea class="w-full bg-slate-50 border-0 p-4 rounded-2xl mb-6 h-32 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Kirjelda oma strateegilist fookust..."></textarea>
+                    <button class="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-2xl font-bold transition">Käivita analüüs</button>
                 </div>
             </div>
-        </div>
 
-        <div id="view-history" class="hidden">
-            <div id="history-container"></div>
+            <!-- Analüüsi väljund (Kaardid) -->
+            <div class="space-y-6">
+                <!-- Kaart 1 -->
+                <div class="card">
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">Mõju noortevaldkonnale</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">Hariduse kvaliteedihindamine on kriitiline sisend. See mõjutab otseselt noorte võrdseid võimalusi ja vajab tihedamat koostööd Harno ja ministeeriumi vahel.</p>
+                    <div class="mt-4 inline-block bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase">Positiivne mõju</div>
+                </div>
+
+                <!-- Kaart 2 -->
+                <div class="card">
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">Maineline fookus</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">Sündmus loob võimaluse näidata läbipaistvust. Soovituslik on rõhutada avatust ja innovaatilist lähenemist, et vältida maineohtu.</p>
+                    <div class="mt-4 inline-block bg-blue-100 text-blue-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase">Mainevõimalus</div>
+                </div>
+            </div>
+
         </div>
     </main>
 
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwU1_EhiDmRyrUscZ-8BLy2RxDeWdO2m46Eme4h-nPn9e64vo7abR6xUfLT3QV1TLDEiw/exec";
-
-        function switchView(viewId) {
-            document.getElementById('view-main').classList.toggle('hidden', viewId !== 'view-main');
-            document.getElementById('view-history').classList.toggle('hidden', viewId !== 'view-history');
-        }
-
-        async function fetchData() {
-            try {
-                const res = await fetch(SCRIPT_URL);
-                const data = await res.json();
-               document.getElementById('recent-texts-container').innerHTML = data.news.map(n => `
-    <div class="p-4 bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition text-sm mb-3">
-        <a href="${n.link}" target="_blank" class="font-bold text-blue-900 hover:underline block leading-tight mb-2">
-            ${n.title}
-        </a>
-        <div class="flex justify-between items-center text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2">
-            <span>${n.source}</span>
-            <span>${n.date}</span>
-        </div>
-        <p class="text-xs text-slate-600 leading-relaxed italic border-t pt-2">
-            ${n.summary}
-        </p>
-    </div>
-`).join('');
-               // Uuendatud ajaloo kuvamine
-document.getElementById('history-container').innerHTML = data.history.map(h => `
-    <div class="bg-white p-6 border border-slate-200 rounded-lg shadow-sm mb-4">
-        <div class="flex justify-between items-center mb-4">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                ${new Date(h.date).toLocaleDateString('et-EE')}
-            </span>
-        </div>
-        <div class="prose text-sm text-slate-700 leading-relaxed">
-            ${h.content}
-        </div>
-    </div>
-`).join('');
-            } catch (err) { console.error(err); }
-        }
-
-        async function generateReport() {
-            const btn = document.getElementById('gen-btn');
-            btn.innerText = "Analüüsin...";
-            const res = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "generate", customPrompt: document.getElementById('ai-custom-prompt').value })
-            });
-            const data = await res.json();
-            // Puhastatud kuvamine: eemaldame JSONi sümbolid
-            const clean = data.insight.replace(/[\{\}\"]/g, '').replace(/\\n/g, '<br>');
-            document.getElementById('ai-insight-content').innerHTML = clean;
-            document.getElementById('action-btns').classList.remove('hidden');
-            btn.innerText = "Käivita analüüs";
-        }
-
-        async function saadaMeiliga() {
-            const content = document.getElementById('ai-insight-content').innerHTML;
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "sendEmail", content: content })
-            });
-            alert("Raport on teele pandud!");
-        }
-
-        window.onload = fetchData;
-    </script>
 </body>
 </html>

@@ -2,125 +2,75 @@
 <html lang="et">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radar | Noortepoliitika Seireplatvorm</title>
+    <title>RADAR 3.0 | Strateegiline Seire</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .prose { color: #334155; font-size: 0.95rem; line-height: 1.6; }
-        .prose h3 { font-weight: bold; margin-top: 1rem; color: #1e293b; }
-    </style>
 </head>
-<body class="bg-slate-50 flex h-screen font-sans text-slate-800">
+<body class="bg-slate-50 flex h-screen">
 
-    <aside class="w-64 bg-slate-950 text-white flex flex-col shadow-xl">
-        <div class="p-6 border-b border-slate-900">
-            <h1 class="text-2xl font-black text-white">RADAR <span class="text-blue-500">3.0</span></h1>
-            <p class="text-slate-500 text-[10px] uppercase tracking-widest font-bold">Strateegiline Seire</p>
-        </div>
-        <nav class="flex-1 mt-6 px-4 space-y-1.5">
-            <button onclick="switchView('view-main', this)" class="w-full flex items-center px-4 py-3 rounded-lg bg-blue-600 text-white nav-btn text-sm font-medium">
-                <i class="fas fa-th-large w-5 mr-3"></i> Töölaud
-            </button>
-            <button onclick="switchView('view-history', this)" class="w-full flex items-center px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-900 nav-btn text-sm font-medium">
-                <i class="fas fa-folder-open w-5 mr-3"></i> Raportite arhiiv
-            </button>
+    <!-- Külgpaneel -->
+    <aside class="w-64 bg-slate-950 text-white p-6">
+        <h1 class="text-2xl font-black">RADAR <span class="text-blue-500">3.0</span></h1>
+        <nav class="mt-8 space-y-2">
+            <button onclick="switchView('view-main')" class="w-full text-left p-3 bg-blue-600 rounded">Töölaud</button>
+            <button onclick="switchView('view-history')" class="w-full text-left p-3 hover:bg-slate-900 rounded">Arhiiv</button>
         </nav>
     </aside>
 
-    <main class="flex-1 flex flex-col overflow-hidden">
-        <header class="bg-white px-8 py-4 border-b flex justify-between items-center">
-            <h2 id="page-title" class="text-lg font-bold">Töölaud: Inforuumi seire</h2>
-            <button onclick="fetchData()" class="text-xs border px-4 py-2 rounded-lg hover:bg-slate-50 font-semibold text-slate-600">
-                <i class="fas fa-rotate mr-2"></i> Värskenda
-            </button>
-        </header>
-
-        <div class="flex-1 overflow-y-auto p-8">
-            <div id="view-main" class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-1 space-y-4">
-                    <h3 class="text-xs font-bold uppercase text-slate-400">Viimased monitooritud allikad</h3>
-                    <div id="recent-texts-container" class="space-y-3">
-                        <p class="text-slate-400 text-sm italic">Laadin andmeid...</p>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-2 bg-white p-6 rounded-xl border shadow-sm">
-                    <h3 class="text-xs font-bold uppercase text-slate-400 mb-4">Strateegiline analüüs ja vaba päring</h3>
-                    <div class="space-y-4">
-                        <select id="report-type" class="w-full p-2.5 text-sm border rounded-lg bg-slate-50">
-                            <option value="maine">Mainekujunduse audit</option>
-                            <option value="loimitus">Valdkondade lõimituse raport</option>
-                            <option value="vabavorm">VABA PÄRING</option>
-                        </select>
-                        <textarea id="ai-custom-prompt" rows="4" placeholder="Küsi AI-lt..." class="w-full p-3 text-sm border rounded-lg bg-slate-50"></textarea>
-                        <button onclick="generateReport()" id="gen-btn" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold text-sm hover:bg-blue-950">
-                            Käivita analüüs
-                      <div class="flex gap-2 mt-4">
-    <button onclick="window.print()" class="bg-gray-200 px-4 py-2 rounded text-xs">Salvesta PDF</button>
-    <button onclick="saadaEmail()" class="bg-gray-200 px-4 py-2 rounded text-xs">Saada emailile</button>
-</div>
-
-<script>
-async function fetchData() {
-    const res = await fetch(SCRIPT_URL);
-    const data = await res.json();
-    
-    // Uudised
-    document.getElementById('recent-texts-container').innerHTML = data.news.map(n => `<div>${n.title}</div>`).join('');
-    
-    // Arhiiv
-    document.getElementById('history-container').innerHTML = data.history.map(h => `
-        <div class="bg-white p-4 shadow-sm rounded-lg mb-2">
-            <small>${h.date}</small>
-            <div class="prose">${h.content}</div>
+    <main class="flex-1 p-8 overflow-y-auto">
+        <!-- Töölaud -->
+        <div id="view-main" class="grid grid-cols-3 gap-8">
+            <div id="recent-texts-container" class="col-span-1 space-y-2">
+                <h3 class="text-xs font-bold uppercase text-slate-400">Allikad</h3>
+                <p>Laadin andmeid...</p>
+            </div>
+            <div class="col-span-2 bg-white p-6 rounded shadow">
+                <select id="report-type" class="w-full border p-2 mb-4">
+                    <option value="maine">Mainekujunduse audit</option>
+                </select>
+                <textarea id="ai-custom-prompt" class="w-full border p-2 mb-4" placeholder="Sinu suunised AI-le..."></textarea>
+                <button onclick="generateReport()" id="gen-btn" class="w-full bg-blue-900 text-white py-2 rounded">Käivita analüüs</button>
+                <div id="ai-insight-content" class="mt-6 prose"></div>
+            </div>
         </div>
-    `).join('');
-}
-</script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwU1_EhiDmRyrUscZ-8BLy2RxDeWdO2m46Eme4h-nPn9e64vo7abR6xUfLT3QV1TLDEiw/exec";
 
-        // Automaatne laadimine lehe avamisel
-        window.onload = fetchData;
+        <!-- Arhiiv -->
+        <div id="view-history" class="hidden">
+            <div id="history-container"></div>
+        </div>
+    </main>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxic9F7g8jwAgWnEMfg43KrHQGtsqltMWcrvg8icnT-FmQfzYJ_wXnv81Vq5hP6_GE_KQ/exec";
+
+        function switchView(viewId) {
+            document.getElementById('view-main').classList.toggle('hidden', viewId !== 'view-main');
+            document.getElementById('view-history').classList.toggle('hidden', viewId !== 'view-history');
+        }
 
         async function fetchData() {
-            const container = document.getElementById('recent-texts-container');
             try {
                 const res = await fetch(SCRIPT_URL);
                 const data = await res.json();
-                container.innerHTML = data.map(row => `
-                    <div class="p-3 bg-white border rounded-lg text-sm">
-                        <a href="${row.link}" target="_blank" class="font-bold text-blue-800 hover:underline">${row.pealkiri}</a>
-                        <p class="text-[10px] text-slate-400 uppercase mt-1">${row.allikas}</p>
-                    </div>
-                `).join('');
-            } catch (err) {
-                container.innerHTML = '<p class="text-red-500 text-sm">Andmete laadimine ebaõnnestus.</p>';
-            }
+                document.getElementById('recent-texts-container').innerHTML = data.news.map(n => 
+                    `<div class="p-2 border bg-white text-sm"><b>${n.title}</b></div>`).join('');
+                document.getElementById('history-container').innerHTML = data.history.map(h => 
+                    `<div class="p-4 bg-white mb-2 shadow">${h.content}</div>`).join('');
+            } catch (err) { console.error(err); }
         }
 
         async function generateReport() {
             const btn = document.getElementById('gen-btn');
-            const content = document.getElementById('ai-insight-content');
             btn.innerText = "Analüüsin...";
-            
             const res = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify({
-                    action: "generate",
-                    reportType: document.getElementById('report-type').value,
-                    customPrompt: document.getElementById('ai-custom-prompt').value
-                })
+                body: JSON.stringify({ action: "generate", customPrompt: document.getElementById('ai-custom-prompt').value })
             });
             const data = await res.json();
-            
-            // Puhastame teksti: eemaldame JSON-i sümbolid ja kuvame loetavalt
-            let insightText = data.insight.replace(/\\n/g, '<br>').replace(/"/g, '');
-            content.innerHTML = `<div class="p-4 bg-slate-50 rounded-lg">${insightText}</div>`;
+            document.getElementById('ai-insight-content').innerHTML = data.insight;
             btn.innerText = "Käivita analüüs";
         }
+
+        window.onload = fetchData;
     </script>
 </body>
 </html>

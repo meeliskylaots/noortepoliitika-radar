@@ -10,7 +10,7 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .prose { color: #334155; font-size: 0.95rem; line-height: 1.6; }
-        .prose a { color: #2563eb; text-decoration: underline; font-weight: 500; }
+        .prose h3 { font-weight: bold; margin-top: 1rem; color: #1e293b; }
     </style>
 </head>
 <body class="bg-slate-50 flex h-screen font-sans text-slate-800">
@@ -53,9 +53,9 @@
                         <select id="report-type" class="w-full p-2.5 text-sm border rounded-lg bg-slate-50">
                             <option value="maine">Mainekujunduse audit</option>
                             <option value="loimitus">Valdkondade lõimituse raport</option>
-                            <option value="vabavorm">VABA PÄRING (AI vastab küsimusele)</option>
+                            <option value="vabavorm">VABA PÄRING</option>
                         </select>
-                        <textarea id="ai-custom-prompt" rows="4" placeholder="Küsi AI-lt andmete kohta (nt: Millised on peamised maineriskid praegustes pealkirjades?)" class="w-full p-3 text-sm border rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea id="ai-custom-prompt" rows="4" placeholder="Küsi AI-lt..." class="w-full p-3 text-sm border rounded-lg bg-slate-50"></textarea>
                         <button onclick="generateReport()" id="gen-btn" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold text-sm hover:bg-blue-950">
                             Käivita analüüs
                         </button>
@@ -63,103 +63,51 @@
                     <div id="ai-insight-content" class="prose mt-6 pt-6 border-t"></div>
                 </div>
             </div>
-
-            <div id="view-history" class="hidden max-w-4xl mx-auto">
-                <div id="history-container" class="space-y-4"></div>
-            </div>
         </div>
     </main>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwU1_EhiDmRyrUscZ-8BLy2RxDeWdO2m46Eme4h-nPn9e64vo7abR6xUfLT3QV1TLDEiw/exec";
 
-        function switchView(viewId, btn) {
-            document.querySelectorAll('main > div > div').forEach(div => div.classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('bg-blue-600', 'text-slate-400'));
-            btn.classList.replace('text-slate-400', 'bg-blue-600');
-            btn.classList.add('text-white');
-        }
+        // Automaatne laadimine lehe avamisel
+        window.onload = fetchData;
 
         async function fetchData() {
-            const res = await fetch(SCRIPT_URL);
-            const data = await res.json();
-            renderRecent(data.data);
-            renderHistory(data.history);
-        }
-
-        function renderRecent(data) {
             const container = document.getElementById('recent-texts-container');
-            container.innerHTML = data.slice(-10).reverse().map(row => `
-                <div class="p-3 bg-white border rounded-lg text-sm">
-                    <a href="${row.url}" target="_blank" class="font-bold text-blue-800 hover:underline">${row.title}</a>
-                    <p class="text-[10px] text-slate-400 uppercase mt-1">${row.source}</p>
-                </div>
-            `).join('');
+            try {
+                const res = await fetch(SCRIPT_URL);
+                const data = await res.json();
+                container.innerHTML = data.map(row => `
+                    <div class="p-3 bg-white border rounded-lg text-sm">
+                        <a href="${row.link}" target="_blank" class="font-bold text-blue-800 hover:underline">${row.pealkiri}</a>
+                        <p class="text-[10px] text-slate-400 uppercase mt-1">${row.allikas}</p>
+                    </div>
+                `).join('');
+            } catch (err) {
+                container.innerHTML = '<p class="text-red-500 text-sm">Andmete laadimine ebaõnnestus.</p>';
+            }
         }
-
-       let controller = new AbortController();
 
         async function generateReport() {
             const btn = document.getElementById('gen-btn');
             const content = document.getElementById('ai-insight-content');
-            
-            // Loome uue kontrollija, et saaksime eelmist päringut katkestada
-            controller = new AbortController();
-            
             btn.innerText = "Analüüsin...";
-            btn.disabled = true;
             
-            // Loome "Katkesta" nupu
-            const abortBtn = document.createElement('button');
-            abortBtn.innerText = "Katkesta analüüs";
-            abortBtn.className = "w-full mt-2 bg-red-600 text-white py-2 rounded-lg text-xs font-bold hover:bg-red-700";
-            abortBtn.id = "abort-btn";
-            abortBtn.onclick = () => {
-                controller.abort();
-                content.innerHTML = '<p class="text-red-600 text-sm">Analüüs katkestatud.</p>';
-                btn.innerText = "Käivita analüüs";
-                btn.disabled = false;
-                abortBtn.remove();
-            };
-            btn.parentNode.appendChild(abortBtn);
-
-            try {
-                const res = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    signal: controller.signal, // See ongi katkestamise võti
-                    body: JSON.stringify({
-                        action: "generate",
-                        reportType: document.getElementById('report-type').value,
-                        customPrompt: document.getElementById('ai-custom-prompt').value
-                    })
-                });
-                const data = await res.json();
-                content.innerHTML = data.insight;
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    console.log('Kasutaja katkestas.');
-                } else {
-                    content.innerHTML = '<p class="text-red-500">Viga: ' + err.message + '</p>';
-                }
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Käivita analüüs";
-                const existingAbortBtn = document.getElementById('abort-btn');
-                if (existingAbortBtn) existingAbortBtn.remove();
-            }
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "generate",
+                    reportType: document.getElementById('report-type').value,
+                    customPrompt: document.getElementById('ai-custom-prompt').value
+                })
+            });
+            const data = await res.json();
+            
+            // Puhastame teksti: eemaldame JSON-i sümbolid ja kuvame loetavalt
+            let insightText = data.insight.replace(/\\n/g, '<br>').replace(/"/g, '');
+            content.innerHTML = `<div class="p-4 bg-slate-50 rounded-lg">${insightText}</div>`;
+            btn.innerText = "Käivita analüüs";
         }
-
-        function renderHistory(history) {
-            document.getElementById('history-container').innerHTML = history.reverse().map(item => `
-                <div class="bg-white p-6 border rounded-lg prose text-sm">
-                    <p class="text-[10px] font-bold text-slate-400">${new Date(item.date).toLocaleString()}</p>
-                    ${item.content}
-                </div>
-            `).join('');
-        }
-
-        fetchData();
     </script>
 </body>
 </html>

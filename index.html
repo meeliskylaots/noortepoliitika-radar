@@ -58,15 +58,28 @@
                         <textarea id="ai-custom-prompt" rows="4" placeholder="Küsi AI-lt..." class="w-full p-3 text-sm border rounded-lg bg-slate-50"></textarea>
                         <button onclick="generateReport()" id="gen-btn" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold text-sm hover:bg-blue-950">
                             Käivita analüüs
-                        </button>
-                    </div>
-                    <div id="ai-insight-content" class="prose mt-6 pt-6 border-t"></div>
-                </div>
-            </div>
-        </div>
-    </main>
+                      <div class="flex gap-2 mt-4">
+    <button onclick="window.print()" class="bg-gray-200 px-4 py-2 rounded text-xs">Salvesta PDF</button>
+    <button onclick="saadaEmail()" class="bg-gray-200 px-4 py-2 rounded text-xs">Saada emailile</button>
+</div>
 
-    <script>
+<script>
+async function fetchData() {
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    
+    // Uudised
+    document.getElementById('recent-texts-container').innerHTML = data.news.map(n => `<div>${n.title}</div>`).join('');
+    
+    // Arhiiv
+    document.getElementById('history-container').innerHTML = data.history.map(h => `
+        <div class="bg-white p-4 shadow-sm rounded-lg mb-2">
+            <small>${h.date}</small>
+            <div class="prose">${h.content}</div>
+        </div>
+    `).join('');
+}
+</script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwU1_EhiDmRyrUscZ-8BLy2RxDeWdO2m46Eme4h-nPn9e64vo7abR6xUfLT3QV1TLDEiw/exec";
 
         // Automaatne laadimine lehe avamisel

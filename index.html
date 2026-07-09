@@ -67,8 +67,24 @@
                 <div id="recent-texts-container" class="scroll-area space-y-3 pr-2">Laadin...</div>
             </div>
             <div class="col-span-8">
-                <textarea id="ai-custom-prompt" class="w-full p-4 bg-white rounded-xl mb-4 border border-slate-200 h-32" placeholder="Kirjelda oma strateegilist fookust..."></textarea>
-                <button onclick="generateReport()" id="gen-btn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition">Käivita analüüs</button>
+                <div class="space-y-4">
+                    <select id="ai-preset-prompt" class="w-full bg-white border border-slate-200 p-4 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Vali eelvormistatud analüüs (vabatahtlik) --</option>
+                        <option value="Mainekujunduse audit: Hinda viimaste uudiste pealkirju mainekujunduslikust aspektist. Kas need on positiivsed, negatiivsed või neutraalsed? Kas need loovad head kuvandit?">Mainekujunduse audit</option>
+                        <option value="Valdkondade lõimituse raport: Analüüsi viimaseid uudiseid ja otsi märke erinevate valdkondade (haridus, noorsootöö, poliitika) koostööst või selle puudumisest.">Valdkondade lõimituse raport</option>
+                    </select>
+                    
+                    <textarea id="ai-custom-prompt" class="w-full p-4 bg-white rounded-xl border border-slate-200 h-32" placeholder="Kirjelda oma strateegilist fookust..."></textarea>
+                    
+                    <button onclick="generateReport()" id="gen-btn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition relative">
+                        <span id="btn-text">Käivita analüüs</span>
+                        <!-- Lihtne CSS laadimise indikaator nupu sees -->
+                        <div id="btn-loader" class="hidden absolute inset-0 flex items-center justify-center">
+                             <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    </button>
+                </div>
+                
                 <div id="ai-insight-content" class="mt-8"></div>
             </div>
         </div>
@@ -97,6 +113,58 @@
             
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById('nav-' + viewId.split('-')[1]).classList.add('active');
+        }
+
+        async function generateReport() {
+            const btn = document.getElementById('gen-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnLoader = document.getElementById('btn-loader');
+            const outputArea = document.getElementById('ai-insight-content');
+            
+            // Võtame väärtuse kas rippmenüüst või tekstikastist
+            const presetPrompt = document.getElementById('ai-preset-prompt').value;
+            const customPrompt = document.getElementById('ai-custom-prompt').value;
+            
+            const finalPrompt = customPrompt.trim() !== "" ? customPrompt : presetPrompt;
+
+            if (finalPrompt.trim() === "") {
+                alert("Palun vali analüüsi teema või kirjuta oma küsimus!");
+                return;
+            }
+
+            // UI uuendamine laadimise ajaks
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            outputArea.innerHTML = '<div class="p-6 bg-blue-50 text-blue-600 rounded-xl flex items-center gap-3"><div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>Analüüsin andmeid, palun oota...</div>';
+
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'generate',
+                        customPrompt: finalPrompt
+                    }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // Apps Script vajab seda päist CORS jaoks
+                });
+                
+                const result = await res.json();
+                
+                // Kuvame tulemuse
+                outputArea.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                        <h4 class="font-bold text-slate-900 text-lg mb-4">Analüüsi tulemus</h4>
+                        <div class="prose prose-slate max-w-none text-sm text-slate-700 whitespace-pre-wrap">${result.insight || 'Viga: AI ei tagastanud analüüsi.'}</div>
+                    </div>
+                `;
+            } catch (error) {
+                outputArea.innerHTML = `<div class="p-6 bg-red-50 text-red-600 rounded-xl">Viga andmete pärimisel: ${error.message}</div>`;
+            } finally {
+                // UI taastamine
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+            }
         }
 
         async function fetchData() {

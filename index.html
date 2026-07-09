@@ -39,22 +39,22 @@
             <div class="grid grid-cols-4 gap-6 mb-10">
                 <div class="kpi-card">
                     <p class="text-slate-400 text-[10px] uppercase font-bold">Allikaid</p>
-                    <h4 class="text-2xl font-bold">12</h4>
+                    <h4 id="kpi-sources" class="text-2xl font-bold">-</h4>
                     <p class="text-[10px] text-slate-500 mt-2">Jälgitavate veebiportaalide arv, mida süsteem automaatselt skaneerib.</p>
                 </div>
                 <div class="kpi-card">
                     <p class="text-slate-400 text-[10px] uppercase font-bold">Uudiseid</p>
-                    <h4 class="text-2xl font-bold">3</h4>
+                    <h4 id="kpi-news" class="text-2xl font-bold">-</h4>
                     <p class="text-[10px] text-slate-500 mt-2">Täna andmebaasi lisatud uued artiklid, mida süsteem on analüüsinud.</p>
                 </div>
                 <div class="kpi-card">
                     <p class="text-slate-400 text-[10px] uppercase font-bold">Raport</p>
-                    <h4 class="text-2xl font-bold">Täna</h4>
+                    <h4 id="kpi-report" class="text-2xl font-bold">-</h4>
                     <p class="text-[10px] text-slate-500 mt-2">Viimase AI-põhise trendianalüüsi teostamise aeg.</p>
                 </div>
                 <div class="kpi-card">
                     <p class="text-slate-400 text-[10px] uppercase font-bold">Maine</p>
-                    <h4 class="text-2xl font-bold text-blue-600">84%</h4>
+                    <h4 id="kpi-reputation" class="text-2xl font-bold text-blue-600">-</h4>
                     <p class="text-[10px] text-slate-500 mt-2">Viimase 100 artikli keskmine hindamine (inimkesksus, arusaadavus, aktiivsus).</p>
                 </div>
             </div>
@@ -102,6 +102,15 @@
         async function fetchData() {
             const res = await fetch(SCRIPT_URL);
             const data = await res.json();
+            
+            // KPI väärtuste uuendamine otse andmebaasist
+            if(data.kpi) {
+                document.getElementById('kpi-sources').innerText = data.kpi.sources;
+                document.getElementById('kpi-news').innerText = data.kpi.newsToday;
+                document.getElementById('kpi-report').innerText = data.kpi.lastReport;
+                document.getElementById('kpi-reputation').innerText = data.kpi.reputation;
+            }
+
             document.getElementById('recent-texts-container').innerHTML = data.news.map(n => `
                 <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                     <a href="${n.link}" target="_blank" class="font-semibold text-sm block mb-1 hover:text-blue-600">${n.title}</a>

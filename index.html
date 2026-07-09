@@ -85,6 +85,7 @@
                     </button>
                 </div>
                 
+                <!-- See on konteiner, kuhu paneme ilusa tulemuse ja nupud -->
                 <div id="ai-insight-content" class="mt-8"></div>
             </div>
         </div>
@@ -150,11 +151,51 @@
                 
                 const result = await res.json();
                 
-                // Kuvame tulemuse
+                // --- PARANDUS: JSONi parsimine ja ilusa HTMLi genereerimine ---
+                let analysisHtml = '';
+                try {
+                    // Proovime aru saada, kas AI andis JSONi
+                    const parsedData = typeof result.insight === 'string' ? JSON.parse(result.insight) : result.insight;
+                    
+                    // Kui see on tõesti meie oodatud struktuuriga JSON
+                    if (parsedData && typeof parsedData === 'object') {
+                         for (const [key, value] of Object.entries(parsedData)) {
+                             // Määrame "hinnangu" sildi värvi (kui on "Positiivne", siis roheline jne)
+                             let badgeClass = "bg-blue-100 text-blue-700"; // Vaikimisi
+                             if(value.hinnang) {
+                                 const h = value.hinnang.toLowerCase();
+                                 if (h.includes('positiiv')) badgeClass = "bg-green-100 text-green-700";
+                                 if (h.includes('negatiiv') || h.includes('oht')) badgeClass = "bg-red-100 text-red-700";
+                             }
+                             
+                             analysisHtml += `
+                                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-4">
+                                    <h3 class="text-lg font-bold text-slate-900 mb-2">${key}</h3>
+                                    <p class="text-slate-600 text-sm leading-relaxed mb-4">${value.analüüs || value.analuus || ''}</p>
+                                    ${value.hinnang ? `<div class="inline-block ${badgeClass} text-[10px] font-bold px-3 py-1 rounded-full uppercase">${value.hinnang}</div>` : ''}
+                                </div>
+                             `;
+                         }
+                    } else {
+                        // Kui mingil põhjusel ei olnud õige struktuuriga JSON
+                        throw new Error("Mitte-standardne JSON");
+                    }
+                } catch (e) {
+                    // Kui AI andis lihtsalt tavalise teksti, kuvame selle lihtsalt
+                    analysisHtml = `<div class="prose prose-slate max-w-none text-sm text-slate-700 whitespace-pre-wrap">${result.insight || 'Viga: AI ei tagastanud analüüsi.'}</div>`;
+                }
+
+                // Kuvame tulemuse koos uute tegutsemisnuppudega
                 outputArea.innerHTML = `
-                    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <h4 class="font-bold text-slate-900 text-lg mb-4">Analüüsi tulemus</h4>
-                        <div class="prose prose-slate max-w-none text-sm text-slate-700 whitespace-pre-wrap">${result.insight || 'Viga: AI ei tagastanud analüüsi.'}</div>
+                    <div class="mb-6 flex justify-between items-center">
+                        <h4 class="font-bold text-slate-900 text-xl">Analüüsi tulemus</h4>
+                        <div class="flex gap-2">
+                            <button onclick="sendAnalysisEmail()" class="text-xs font-bold px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">Saada meilile</button>
+                            <button onclick="window.print()" class="text-xs font-bold px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">Salvesta PDF</button>
+                        </div>
+                    </div>
+                    <div id="printable-analysis">
+                        ${analysisHtml}
                     </div>
                 `;
             } catch (error) {
@@ -164,6 +205,33 @@
                 btn.disabled = false;
                 btnText.classList.remove('hidden');
                 btnLoader.classList.add('hidden');
+            }
+        }
+
+        // --- UUS FUNKTSIOON: Meili saatmine otse veebist ---
+        async function sendAnalysisEmail() {
+            const content = document.getElementById('printable-analysis').innerHTML;
+            if(!content) return;
+            
+            alert("Saadan raportit meilile...");
+            
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'sendEmail',
+                        content: `
+                            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                                <h2 style="color: #1e293b;">Strateegiline Analüüs (RADAR 3.4)</h2>
+                                ${content}
+                            </div>
+                        `
+                    }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                alert("Raport on edukalt Sinu postkasti saadetud!");
+            } catch (e) {
+                alert("Viga saatmisel. Proovi uuesti.");
             }
         }
 

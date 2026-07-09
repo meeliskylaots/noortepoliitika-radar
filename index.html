@@ -12,6 +12,14 @@
         .sidebar-link.active { @apply bg-blue-600 text-white shadow-lg shadow-blue-200; }
         .kpi-card { @apply bg-white p-6 rounded-2xl border border-slate-100 shadow-sm; }
         .scroll-area { height: 600px; overflow-y: auto; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #printable-analysis, #printable-analysis * { visibility: visible; }
+            #printable-analysis { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+            .no-print { display: none !important; }
+            .print-bg-white { background-color: white !important; border: none !important; box-shadow: none !important; }
+        }
     </style>
 </head>
 <body class="flex min-h-screen">
@@ -122,10 +130,8 @@
             const btnLoader = document.getElementById('btn-loader');
             const outputArea = document.getElementById('ai-insight-content');
             
-            // Võtame väärtuse kas rippmenüüst või tekstikastist
             const presetPrompt = document.getElementById('ai-preset-prompt').value;
             const customPrompt = document.getElementById('ai-custom-prompt').value;
-            
             const finalPrompt = customPrompt.trim() !== "" ? customPrompt : presetPrompt;
 
             if (finalPrompt.trim() === "") {
@@ -133,75 +139,116 @@
                 return;
             }
 
-            // UI uuendamine laadimise ajaks
             btn.disabled = true;
             btnText.classList.add('hidden');
             btnLoader.classList.remove('hidden');
-            outputArea.innerHTML = '<div class="p-6 bg-blue-50 text-blue-600 rounded-xl flex items-center gap-3"><div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>Analüüsin andmeid, palun oota...</div>';
+            outputArea.innerHTML = '<div class="p-6 bg-blue-50 text-blue-600 rounded-xl flex items-center gap-3"><div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>Analüüsin ja koostan graafikuid, palun oota...</div>';
 
             try {
                 const res = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify({
-                        action: 'generate',
-                        customPrompt: finalPrompt
-                    }),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // Apps Script vajab seda päist CORS jaoks
+                    body: JSON.stringify({ action: 'generate', customPrompt: finalPrompt }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                 });
                 
                 const result = await res.json();
                 
-                // --- PARANDUS: JSONi parsimine ja ilusa HTMLi genereerimine ---
                 let analysisHtml = '';
                 try {
-                    // Proovime aru saada, kas AI andis JSONi
                     const parsedData = typeof result.insight === 'string' ? JSON.parse(result.insight) : result.insight;
-                    
-                    // Kui see on tõesti meie oodatud struktuuriga JSON
                     if (parsedData && typeof parsedData === 'object') {
                          for (const [key, value] of Object.entries(parsedData)) {
-                             // Määrame "hinnangu" sildi värvi (kui on "Positiivne", siis roheline jne)
-                             let badgeClass = "bg-blue-100 text-blue-700"; // Vaikimisi
+                             let badgeClass = "bg-blue-100 text-blue-700";
                              if(value.hinnang) {
                                  const h = value.hinnang.toLowerCase();
                                  if (h.includes('positiiv')) badgeClass = "bg-green-100 text-green-700";
                                  if (h.includes('negatiiv') || h.includes('oht')) badgeClass = "bg-red-100 text-red-700";
                              }
-                             
                              analysisHtml += `
-                                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-4">
+                                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-4 print-bg-white">
                                     <h3 class="text-lg font-bold text-slate-900 mb-2">${key}</h3>
                                     <p class="text-slate-600 text-sm leading-relaxed mb-4">${value.analüüs || value.analuus || ''}</p>
                                     ${value.hinnang ? `<div class="inline-block ${badgeClass} text-[10px] font-bold px-3 py-1 rounded-full uppercase">${value.hinnang}</div>` : ''}
                                 </div>
                              `;
                          }
-                    } else {
-                        // Kui mingil põhjusel ei olnud õige struktuuriga JSON
-                        throw new Error("Mitte-standardne JSON");
-                    }
+                    } else { throw new Error("Mitte-standardne JSON"); }
                 } catch (e) {
-                    // Kui AI andis lihtsalt tavalise teksti, kuvame selle lihtsalt
                     analysisHtml = `<div class="prose prose-slate max-w-none text-sm text-slate-700 whitespace-pre-wrap">${result.insight || 'Viga: AI ei tagastanud analüüsi.'}</div>`;
                 }
 
-                // Kuvame tulemuse koos uute tegutsemisnuppudega
+                let visualStatsHtml = '';
+                if (result.articles && result.articles.length > 0) {
+                    // Allikate kokkulugemine
+                    let sourceCounts = {};
+                    result.articles.forEach(art => {
+                        sourceCounts[art.source] = (sourceCounts[art.source] || 0) + 1;
+                    });
+                    
+                    // Tulpgraafiku HTMLi koostamine
+                    let barsHtml = Object.entries(sourceCounts).map(([src, count]) => {
+                        let pct = Math.round((count / result.articles.length) * 100);
+                        return `
+                        <div class="mb-2">
+                            <div class="flex justify-between text-[10px] font-bold uppercase text-slate-500 mb-1">
+                                <span>${src}</span>
+                                <span>${count} art (${pct}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-1.5">
+                                <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
+                            </div>
+                        </div>`;
+                    }).join('');
+
+                    // Artiklite nimekirja koostamine
+                    let articlesListHtml = result.articles.map(art => 
+                        `<li class="mb-1"><span class="text-slate-400 font-bold w-16 inline-block">${art.source}</span> ${art.title}</li>`
+                    ).join('');
+
+                    visualStatsHtml = `
+                        <div class="bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100 print-bg-white">
+                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Analüüsi Alusandmed</h3>
+                            
+                            <div class="flex gap-8 mb-6">
+                                <!-- Ringikujuline mõõdik -->
+                                <div class="flex flex-col items-center justify-center bg-white w-24 h-24 rounded-full shadow-sm border-4 border-blue-500 shrink-0">
+                                    <span class="text-2xl font-bold text-slate-900 leading-none">${result.articles.length}</span>
+                                    <span class="text-[9px] uppercase font-bold text-slate-400 mt-1">Uudist</span>
+                                </div>
+                                
+                                <!-- Allikate jaotus (Graafikud) -->
+                                <div class="flex-1">
+                                    ${barsHtml}
+                                </div>
+                            </div>
+                            
+                            <!-- Väike nimekiri kaasatud lugudest -->
+                            <div class="mt-4 border-t border-slate-200 pt-4">
+                                <p class="text-[10px] uppercase font-bold text-slate-400 mb-2">Kaasatud sündmused:</p>
+                                <ul class="text-[11px] text-slate-500 leading-relaxed list-none m-0 p-0 h-24 overflow-y-auto">
+                                    ${articlesListHtml}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 outputArea.innerHTML = `
-                    <div class="mb-6 flex justify-between items-center">
+                    <div class="mb-6 flex justify-between items-center no-print">
                         <h4 class="font-bold text-slate-900 text-xl">Analüüsi tulemus</h4>
                         <div class="flex gap-2">
                             <button onclick="sendAnalysisEmail()" class="text-xs font-bold px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">Saada meilile</button>
-                            <button onclick="window.print()" class="text-xs font-bold px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">Salvesta PDF</button>
+                            <button onclick="window.print()" class="text-xs font-bold px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition">Salvesta PDF</button>
                         </div>
                     </div>
                     <div id="printable-analysis">
+                        ${visualStatsHtml}
                         ${analysisHtml}
                     </div>
                 `;
             } catch (error) {
                 outputArea.innerHTML = `<div class="p-6 bg-red-50 text-red-600 rounded-xl">Viga andmete pärimisel: ${error.message}</div>`;
             } finally {
-                // UI taastamine
                 btn.disabled = false;
                 btnText.classList.remove('hidden');
                 btnLoader.classList.add('hidden');

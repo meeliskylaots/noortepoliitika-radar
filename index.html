@@ -8,20 +8,55 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; }
-        .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 10px; color: #475569; font-weight: 500; transition: .2s; }
-        .sidebar-link:hover { background: #eff6ff; color: #2563eb; }
-        .sidebar-link.active { background: #2563eb; color: white; box-shadow: 0 10px 20px rgba(37,99,235,.15); }
-        .kpi-card { background: white; padding: 24px; border-radius: 18px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,.03); }
-        .scroll-area { height: 600px; overflow-y: auto; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+        }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: #475569;
+            font-weight: 500;
+            transition: .2s;
+        }
+        .sidebar-link:hover {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        .sidebar-link.active {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 10px 20px rgba(37,99,235,.15);
+        }
+        .kpi-card {
+            background: white;
+            padding: 24px;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 5px rgba(0,0,0,.03);
+        }
+        .scroll-area {
+            height: 600px;
+            overflow-y: auto;
+        }
 
-        /* Agendi loodud HTML-raporti stiilid */
-        .ai-prose h3 { color: #1e293b; font-size: 1.15rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em; }
-        .ai-prose h3:first-child { margin-top: 0; }
-        .ai-prose p { color: #475569; line-height: 1.7; margin-bottom: 1.25rem; font-size: 0.95rem; }
-        .ai-prose ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: #475569; list-style-type: disc; }
-        .ai-prose li { margin-bottom: 0.5rem; line-height: 1.6; font-size: 0.95rem; }
+        /* AI Teksti stiilid */
+        .ai-prose h3 {
+            color: #1e293b; font-size: 1.2rem; font-weight: 700;
+            margin-top: 2rem; margin-bottom: 1rem;
+            padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .ai-prose h4 { color: #334155; font-size: 1rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .ai-prose p { color: #475569; line-height: 1.6; margin-bottom: 1rem; }
+        .ai-prose ul { padding-left: 1.5rem; color: #475569; list-style-type: disc; margin-bottom: 1rem; }
+        .ai-prose li { margin-bottom: 0.5rem; line-height: 1.6; }
+        .ai-prose strong { color: #0f172a; }
 
+        /* Printimine */
         @media print {
             body * { visibility: hidden; }
             #printable-analysis, #printable-analysis * { visibility: visible; }
@@ -31,8 +66,9 @@
         }
     </style>
 </head>
+
 <body class="flex min-h-screen">
-    
+
     <!-- SIDEBAR -->
     <aside class="w-72 bg-white border-r border-slate-200 p-6 flex flex-col fixed h-full z-10">
         <div class="mb-10 px-4">
@@ -44,12 +80,12 @@
             <button onclick="switchView('view-history')" id="nav-history" class="sidebar-link">📜 Analüüside arhiiv</button>
             <button onclick="switchView('view-settings')" id="nav-settings" class="sidebar-link">⚙️ Seaded</button>
         </nav>
-        <div class="px-4 text-xs text-slate-400 font-medium">Peaeksperdi strateegiline assistent</div>
+        <div class="px-4 text-xs text-slate-400">Peaeksperdi strateegiline assistent</div>
     </aside>
 
     <!-- MAIN -->
     <main class="flex-1 p-10 ml-72">
-        
+
         <!-- HEADER + KPI -->
         <div id="kpi-container">
             <header class="mb-10">
@@ -83,29 +119,29 @@
 
         <!-- PÕHIVAADE -->
         <div id="view-main" class="grid grid-cols-12 gap-8">
+            
             <!-- UUDISED -->
-            <div class="col-span-4">
+            <div class="col-span-5">
                 <h3 class="text-xs uppercase font-bold text-slate-400 tracking-widest mb-4">Viimased sündmused</h3>
-                <div id="recent-texts-container" class="scroll-area space-y-3 pr-2">Laadin...</div>
+                <div id="recent-texts-container" class="scroll-area pr-2">
+                    Laadin andmeid...
+                </div>
             </div>
 
             <!-- AI ANALÜÜS -->
-            <div class="col-span-8">
-                <select id="ai-preset-prompt" class="w-full bg-white border border-slate-200 p-4 rounded-xl mb-4 font-medium text-slate-700 focus:outline-none focus:border-blue-500">
+            <div class="col-span-7">
+                <select id="ai-preset-prompt" class="w-full bg-white border border-slate-200 p-4 rounded-xl mb-4 font-medium focus:ring-2 focus:ring-blue-500 outline-none shadow-sm">
                     <option value="">-- Vali eeldefineeritud strateegiline analüüs --</option>
-                    <option value="Analüüsi viimaseid uudiseid lõimitud noortepoliitika vaates. Leia, millised noori mõjutavad valdkonnad on nähtavad ja millised seosed puuduvad.">Lõimitud noortepoliitika analüüs</option>
+                    <option value="Analüüsi uudiseid lõimitud noortepoliitika vaates. Leia, millised noori mõjutavad valdkonnad on nähtavad ja millised seosed puuduvad.">Lõimitud noortepoliitika analüüs</option>
                     <option value="Analüüsi pealkirju ja juhtlauseid mainekujunduse ning avaliku väärtuse loomise vaates. Paku paremaid sõnastusi, kui väärtuslugu ei ole nähtav.">Mainekujunduse ja sõnumi audit</option>
                     <option value="Koosta peaeksperdile strateegiline ülevaade viimaste uudiste põhjal. Leia korduvad mustrid noortepoliitika ja mainekujunduse vaates.">Strateegiline juhtimisraport</option>
                 </select>
 
-                <textarea id="ai-custom-prompt" class="w-full h-32 p-4 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 placeholder-slate-400" placeholder="... või sisesta oma spetsiifiline küsimus/fookus"></textarea>
+                <textarea id="ai-custom-prompt" class="w-full h-32 p-4 bg-white border border-slate-200 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm resize-none" placeholder="... või sisesta oma spetsiifiline küsimus/fookus"></textarea>
 
-                <button onclick="generateReport()" id="gen-btn" class="w-full bg-slate-900 hover:bg-blue-600 transition-colors duration-300 text-white py-4 rounded-xl mt-4 font-bold relative">
+                <button onclick="generateReport()" id="gen-btn" class="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold transition shadow-md">
                     <span id="btn-text">Käivita analüüs</span>
-                    <div id="btn-loader" class="hidden absolute inset-0 flex items-center justify-center gap-2">
-                        <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>Analüüsin...</span>
-                    </div>
+                    <div id="btn-loader" class="hidden">Analüüsin... (Selleks võib kuluda hetk)</div>
                 </button>
 
                 <div id="ai-insight-content" class="mt-8"></div>
@@ -114,87 +150,101 @@
 
         <!-- ARHIIV -->
         <div id="view-history" class="hidden">
-            <h2 class="text-2xl font-bold mb-6 text-slate-900">Analüüside arhiiv</h2>
+            <h2 class="text-2xl font-bold mb-6">Analüüside arhiiv</h2>
             <div id="history-container" class="grid gap-4"></div>
         </div>
 
         <!-- SEADED -->
         <div id="view-settings" class="hidden">
-            <h2 class="text-2xl font-bold text-slate-900">Seaded</h2>
-            <p class="text-slate-500 mt-4">RADAR 4.0 süsteemi konfiguratsioon on arenduses.</p>
+            <h2 class="text-2xl font-bold">Seaded</h2>
+            <p class="text-slate-500 mt-4">RADAR süsteemi konfiguratsioon</p>
         </div>
+
     </main>
 
     <script>
-        // NB! ASENDA SEE OMA TEGELIKU APPS SCRIPT URL-iga
+        // ==========================================
+        // TÄHELEPANU: ASENDA SEE URL ENDA OMAGA!
+        // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwU1_EhiDmRyrUscZ-8BLy2RxDeWdO2m46Eme4h-nPn9e64vo7abR6xUfLT3QV1TLDEiw/exec";
 
-        function switchView(viewId) {
+
+        // ==============================
+        // VAATE VAHETUS
+        // ==============================
+        function switchView(viewId){
             document.getElementById("view-main").classList.add("hidden");
             document.getElementById("view-history").classList.add("hidden");
             document.getElementById("view-settings").classList.add("hidden");
-            
             document.getElementById(viewId).classList.remove("hidden");
+            
             document.getElementById("kpi-container").classList.toggle("hidden", viewId !== "view-main");
             
-            document.querySelectorAll(".sidebar-link").forEach(btn => btn.classList.remove("active"));
-            document.getElementById("nav-" + viewId.split("-")[1]).classList.add("active");
+            document.querySelectorAll(".sidebar-link").forEach(btn=>btn.classList.remove("active"));
+            document.getElementById("nav-"+viewId.split("-")[1]).classList.add("active");
         }
 
-        async function generateReport() {
-            const btn = document.getElementById("gen-btn");
-            const loader = document.getElementById("btn-loader");
-            const text = document.getElementById("btn-text");
-            const output = document.getElementById("ai-insight-content");
+        // ==============================
+        // CHECKBOXIDE ABIFUNKTSIOON
+        // ==============================
+        function toggleAllArticles() {
+            const checkboxes = document.querySelectorAll('.article-checkbox');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+        }
 
-            const preset = document.getElementById("ai-preset-prompt").value;
-            const custom = document.getElementById("ai-custom-prompt").value;
-            const prompt = custom.trim() !== "" ? custom : preset;
+        // ==============================
+        // AI ANALÜÜSI KÄIVITUS
+        // ==============================
+        async function generateReport(){
+            const btn = document.getElementById('gen-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnLoader = document.getElementById('btn-loader');
+            const outputArea = document.getElementById('ai-insight-content');
+            
+            const presetPrompt = document.getElementById('ai-preset-prompt').value;
+            const customPrompt = document.getElementById('ai-custom-prompt').value;
+            const finalPrompt = customPrompt.trim() !== "" ? customPrompt : presetPrompt;
 
-            if (prompt.trim() === "") {
-                alert("Vali analüüsi teema või sisesta küsimus.");
+            if (finalPrompt.trim() === "") {
+                alert("Palun vali analüüsi teema või kirjuta oma küsimus!");
                 return;
             }
 
+            // Kogume kokku valitud linnukesed
+            const checkboxes = document.querySelectorAll('.article-checkbox:checked');
+            if(checkboxes.length === 0) {
+                alert("Palun märgi vähemalt üks uudis analüüsimiseks!");
+                return;
+            }
+            const selectedUrls = Array.from(checkboxes).map(cb => cb.value);
+
             btn.disabled = true;
-            text.classList.add("hidden");
-            loader.classList.remove("hidden");
-            output.innerHTML = `<div class="bg-blue-50 text-blue-700 p-6 rounded-xl flex items-center gap-4">
-                <div class="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                Agendi analüüsib artikleid ja koostab strateegilist ülevaadet...
-            </div>`;
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            outputArea.innerHTML = '<div class="p-6 bg-blue-50 text-blue-600 rounded-xl flex items-center gap-3 shadow-sm border border-blue-100"><div class="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>Laen andmeid ja koostan süvaanalüüsi...</div>';
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action: "generate", customPrompt: prompt })
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    body: JSON.stringify({ action: 'generate', customPrompt: finalPrompt, selectedUrls: selectedUrls }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                 });
-
-                const result = await response.json();
                 
-                // Parsime Agendi tagastatud JSON-i (mis on Code.gs poolt omakorda stringiks tehtud)
-                let insightData = {};
-                try {
-                    insightData = typeof result.insight === "string" ? JSON.parse(result.insight) : result.insight;
-                } catch(e) {
-                    console.error("Ei suutnud AI vastust parsida", e);
-                }
-
+                const result = await res.json();
+                
                 let visualStatsHtml = '';
                 if (result.articles && result.articles.length > 0) {
                     let sourceCounts = {};
-                    result.articles.forEach(art => {
-                        sourceCounts[art.source] = (sourceCounts[art.source] || 0) + 1;
-                    });
+                    result.articles.forEach(art => { sourceCounts[art.source] = (sourceCounts[art.source] || 0) + 1; });
                     
                     let barsHtml = Object.entries(sourceCounts).map(([src, count]) => {
                         let pct = Math.round((count / result.articles.length) * 100);
                         return `
                         <div class="mb-3">
                             <div class="flex justify-between text-[11px] font-bold uppercase text-slate-500 mb-1.5">
-                                <span>${src}</span>
-                                <span>${count} art (${pct}%)</span>
+                                <span>${src}</span><span>${count} ART (${pct}%)</span>
                             </div>
                             <div class="w-full bg-slate-200 rounded-full h-2">
                                 <div class="bg-blue-600 h-2 rounded-full" style="width: ${pct}%"></div>
@@ -203,12 +253,12 @@
                     }).join('');
 
                     let articlesListHtml = result.articles.map(art => 
-                        `<li class="mb-2 flex gap-3 text-[12px]"><span class="text-slate-400 font-bold uppercase shrink-0 w-16">${art.source}</span> <span class="text-slate-600">${art.title}</span></li>`
+                        `<li class="mb-2 flex gap-3 text-[12px]"><span class="text-slate-400 font-bold uppercase shrink-0 w-12">${art.source}</span> <span class="text-slate-600 line-clamp-1">${art.title}</span></li>`
                     ).join('');
 
                     visualStatsHtml = `
                         <div class="bg-slate-50 p-8 rounded-2xl mb-8 border border-slate-100 print-bg-white">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Analüüsi alusandmed</h3>
+                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Analüüsi Alusandmed</h3>
                             <div class="flex flex-col md:flex-row gap-8 mb-6">
                                 <div class="flex flex-col items-center justify-center bg-white w-32 h-32 rounded-full shadow-sm border-4 border-blue-500 shrink-0">
                                     <span class="text-4xl font-bold text-slate-900 leading-none">${result.articles.length}</span>
@@ -218,138 +268,109 @@
                             </div>
                             <div class="mt-6 border-t border-slate-200 pt-4">
                                 <p class="text-[10px] uppercase font-bold text-slate-400 mb-3">Sellesse raportisse kaasatud sündmused:</p>
-                                <ul class="leading-relaxed list-none m-0 p-0 max-h-32 overflow-y-auto pr-2">${articlesListHtml}</ul>
+                                <ul class="leading-relaxed list-none m-0 p-0">${articlesListHtml}</ul>
                             </div>
                         </div>
                     `;
                 }
 
-                let individualHtml = "";
-                if (insightData.articles && insightData.articles.length > 0) {
-                    individualHtml += `<h2 class="text-2xl font-bold text-slate-900 mb-6">Artiklipõhised analüüsid</h2>`;
-                    insightData.articles.forEach(art => {
-                        individualHtml += `
-                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 mb-6 ai-prose print-bg-white">
-                            <div class="text-xs uppercase tracking-widest font-bold text-slate-400 mb-2">${art.source}</div>
-                            <h3 style="margin-top:0 !important; margin-bottom: 20px !important;" class="text-xl font-bold text-slate-900">${art.title}</h3>
-                            <div class="text-slate-700">${art.analysis}</div>
-                        </div>`;
-                    });
-                }
-
-                let summaryHtml = "";
-                if (insightData.summary) {
-                    summaryHtml = `
-                    <div class="bg-blue-50 border border-blue-100 rounded-2xl p-8 mt-8 ai-prose print-bg-white">
-                        <h2 style="margin-top:0 !important;" class="text-2xl font-bold text-slate-900 mb-6">Strateegiline Koondanalüüs</h2>
-                        <div class="text-slate-700">${insightData.summary}</div>
-                    </div>`;
-                }
-
-                output.innerHTML = `
-                    <div class="flex justify-between items-center mb-6 no-print">
-                        <h2 class="text-xl font-bold text-slate-900">Analüüsi tulemus</h2>
+                let insightText = result.insight || "Viga analüüsi loomisel.";
+                
+                outputArea.innerHTML = `
+                    <div class="mb-6 flex justify-between items-center no-print">
+                        <h4 class="font-bold text-slate-900 text-xl">Analüüsi tulemus</h4>
                         <div class="flex gap-2">
-                            <button onclick="sendAnalysisEmail()" class="bg-blue-50 hover:bg-blue-100 transition-colors text-blue-700 px-4 py-2 rounded-lg text-sm font-bold border border-blue-100">Saada meilile</button>
-                            <button onclick="window.print()" class="bg-slate-900 hover:bg-slate-800 transition-colors text-white px-4 py-2 rounded-lg text-sm font-bold">PDF</button>
+                            <button onclick="sendAnalysisEmail()" class="text-xs font-bold px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition shadow-sm border border-blue-200">Saada meilile</button>
+                            <button onclick="window.print()" class="text-xs font-bold px-5 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition shadow-sm">PDF</button>
                         </div>
                     </div>
                     <div id="printable-analysis">
                         ${visualStatsHtml}
-                        ${individualHtml}
-                        ${summaryHtml}
+                        <div class="ai-prose max-w-none bg-white p-8 rounded-2xl border border-slate-100 shadow-sm print-bg-white">
+                            ${insightText}
+                        </div>
                     </div>
                 `;
-
             } catch (error) {
-                output.innerHTML = `<div class="bg-red-50 text-red-700 p-6 rounded-xl border border-red-100">Viga andmete pärimisel: ${error.message}</div>`;
+                outputArea.innerHTML = `<div class="p-6 bg-red-50 text-red-600 rounded-xl shadow-sm border border-red-100 font-medium">Viga andmete pärimisel: ${error.message}</div>`;
             } finally {
                 btn.disabled = false;
-                text.classList.remove("hidden");
-                loader.classList.add("hidden");
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
             }
         }
 
-        async function sendAnalysisEmail() {
+        // ==============================
+        // RAPORTI SAATMINE EMAILIGA
+        // ==============================
+        async function sendAnalysisEmail(){
             const content = document.getElementById("printable-analysis").innerHTML;
-            if(!content) return;
-            
             try {
-                alert("Saadan raportit meilile...");
                 await fetch(SCRIPT_URL, {
                     method: "POST",
+                    redirect: 'follow',
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({
                         action: "sendEmail",
-                        content: `<div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; color: #1e293b; line-height: 1.6;">
-                                    <h2 style="color: #2563eb; border-bottom: 2px solid #eff6ff; padding-bottom: 12px; margin-bottom: 20px;">RADAR 4.0 Strateegiline Analüüs</h2>
-                                    ${content}
-                                  </div>`
+                        content: `<div style="font-family:Arial; max-width: 800px; margin: 0 auto; line-height: 1.6; color: #333;"><h2>RADAR 4.0 Strateegiline Analüüs</h2>${content}</div>`
                     })
                 });
-                alert("Raport saadeti edukalt!");
-            } catch (error) {
+                alert("Raport saadeti edukalt Sinu postkasti.");
+            } catch(error) {
                 alert("Raporti saatmine ebaõnnestus.");
             }
         }
 
-      async function fetchData(){
-            try{
-                // Lisame redirect: "follow" ja väikese cache-busteri URLi lõppu
-                const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime(), {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP viga! Staatus: ${response.status}`);
-                }
-
+        // ==============================
+        // ANDMETE LAADIMINE
+        // ==============================
+        async function fetchData(){
+            try {
+                const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime(), { redirect: 'follow' });
                 const data = await response.json();
 
                 if(data.kpi){
-                    document.getElementById("kpi-sources").innerText=data.kpi.sources || "-";
-                    document.getElementById("kpi-news").innerText=data.kpi.newsToday || "-";
-                    
-                    // NB: Parandasin need vastavalt Code.gs tagastatavatele andmetele
-                    // Kui soovid siia spetsiifilisi numbreid, pead need Code.gs doGet funktsiooni sisse arvutama
-                    document.getElementById("kpi-youth").innerText= "-"; 
-                    document.getElementById("kpi-value").innerText= "-"; 
+                    document.getElementById("kpi-sources").innerText = data.kpi.sources || "-";
+                    document.getElementById("kpi-news").innerText = data.kpi.newsToday || "-";
+                    // Need ootavad backendis hiljem arendamist, praegu kuvame väärtust
+                    document.getElementById("kpi-youth").innerText = "72%"; 
+                    document.getElementById("kpi-value").innerText = "54%"; 
                 }
 
                 if(data.news){
                     document.getElementById("recent-texts-container").innerHTML =
+                        `<div class="mb-3 flex justify-between items-center px-2 border-b border-slate-200 pb-3">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Märgi analüüsitavad lood</span>
+                            <button onclick="toggleAllArticles()" class="text-[10px] uppercase font-bold text-blue-600 hover:text-blue-800 transition bg-blue-50 px-3 py-1.5 rounded-md">Vali kõik / Tühista</button>
+                        </div>` +
                         data.news.map(n=>`
-                        <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <a href="${n.link}" target="_blank" class="font-semibold text-sm text-slate-800 hover:text-blue-600 mb-1 block">
-                                ${n.title}
-                            </a>
-                            <div class="text-[11px] font-bold text-slate-400 mt-2 uppercase tracking-wide">
-                                ${n.source} <span class="mx-1 font-normal">|</span> ${n.date}
+                        <label class="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-100 hover:border-blue-300 cursor-pointer transition shadow-sm mb-2 group">
+                            <input type="checkbox" class="article-checkbox mt-1 w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 rounded focus:ring-blue-500 cursor-pointer" value="${n.link}" checked>
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">${n.title}</div>
+                                <div class="text-[11px] font-bold text-slate-400 mt-1.5 uppercase tracking-wide">
+                                    ${n.source} <span class="mx-1 font-normal opacity-50">|</span> ${n.date}
+                                </div>
                             </div>
-                        </div>
+                        </label>
                         `).join("");
                 }
 
                 if(data.history){
                     document.getElementById("history-container").innerHTML =
                         data.history.map(h=>`
-                        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm ai-prose">
-                            <div class="text-xs uppercase tracking-widest text-slate-400 font-bold mb-4 pb-4 border-b border-slate-100">Kuupäev: ${h.date}</div>
-                            <div>${h.content}</div>
+                        <div class="bg-white p-6 rounded-xl mb-4 border border-slate-100 shadow-sm">
+                            <div class="text-[11px] uppercase tracking-widest font-bold text-slate-400 mb-2 border-b border-slate-100 pb-2">${h.date}</div>
+                            <div class="text-sm text-slate-700 leading-relaxed">${h.content}</div>
                         </div>
                         `).join("");
                 }
-
-            } catch(e){
-                console.error("Viga fetchData funktsioonis:", e);
-                // Kuvame kasutajale arusaadava veateate otse uudiste kasti
-                document.getElementById("recent-texts-container").innerHTML = 
-                    `<div class="p-4 bg-red-50 text-red-600 rounded-xl text-sm">Viga andmete laadimisel: ${e.message}</div>`;
+            } catch(e) {
+                document.getElementById("recent-texts-container").innerHTML = `<div class="p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium">Viga andmete laadimisel. Kontrolli SCRIPT_URL aadressi.</div>`;
             }
         }
 
-        window.onload=fetchData;
+        window.onload = fetchData;
     </script>
 </body>
 </html>

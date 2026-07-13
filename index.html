@@ -293,18 +293,33 @@
             }
         }
 
-        async function fetchData() {
-            try {
-                const response = await fetch(SCRIPT_URL);
-                const data = await response.json();
+      async function fetchData(){
+            try{
+                // Lisame redirect: "follow" ja väikese cache-busteri URLi lõppu
+                const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime(), {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
 
-                if (data.kpi) {
-                    document.getElementById("kpi-sources").innerText = data.kpi.sources || "-";
-                    document.getElementById("kpi-news").innerText = data.kpi.newsToday || "-";
+                if (!response.ok) {
+                    throw new Error(`HTTP viga! Staatus: ${response.status}`);
                 }
 
-                if (data.news) {
-                    document.getElementById("recent-texts-container").innerHTML = data.news.map(n => `
+                const data = await response.json();
+
+                if(data.kpi){
+                    document.getElementById("kpi-sources").innerText=data.kpi.sources || "-";
+                    document.getElementById("kpi-news").innerText=data.kpi.newsToday || "-";
+                    
+                    // NB: Parandasin need vastavalt Code.gs tagastatavatele andmetele
+                    // Kui soovid siia spetsiifilisi numbreid, pead need Code.gs doGet funktsiooni sisse arvutama
+                    document.getElementById("kpi-youth").innerText= "-"; 
+                    document.getElementById("kpi-value").innerText= "-"; 
+                }
+
+                if(data.news){
+                    document.getElementById("recent-texts-container").innerHTML =
+                        data.news.map(n=>`
                         <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                             <a href="${n.link}" target="_blank" class="font-semibold text-sm text-slate-800 hover:text-blue-600 mb-1 block">
                                 ${n.title}
@@ -313,23 +328,28 @@
                                 ${n.source} <span class="mx-1 font-normal">|</span> ${n.date}
                             </div>
                         </div>
-                    `).join("");
+                        `).join("");
                 }
 
-                if (data.history) {
-                    document.getElementById("history-container").innerHTML = data.history.map(h => `
+                if(data.history){
+                    document.getElementById("history-container").innerHTML =
+                        data.history.map(h=>`
                         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm ai-prose">
                             <div class="text-xs uppercase tracking-widest text-slate-400 font-bold mb-4 pb-4 border-b border-slate-100">Kuupäev: ${h.date}</div>
                             <div>${h.content}</div>
                         </div>
-                    `).join("");
+                        `).join("");
                 }
-            } catch (e) {
-                console.error(e);
+
+            } catch(e){
+                console.error("Viga fetchData funktsioonis:", e);
+                // Kuvame kasutajale arusaadava veateate otse uudiste kasti
+                document.getElementById("recent-texts-container").innerHTML = 
+                    `<div class="p-4 bg-red-50 text-red-600 rounded-xl text-sm">Viga andmete laadimisel: ${e.message}</div>`;
             }
         }
 
-        window.onload = fetchData;
+        window.onload=fetchData;
     </script>
 </body>
 </html>

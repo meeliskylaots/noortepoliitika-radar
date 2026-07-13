@@ -1,312 +1,1185 @@
 <!DOCTYPE html>
 <html lang="et">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RADAR 3.4 | Strateegiline Juhtimispaneel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .sidebar-link { @apply flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-all font-medium w-full text-left; }
-        .sidebar-link.active { @apply bg-blue-600 text-white shadow-lg shadow-blue-200; }
-        .kpi-card { @apply bg-white p-6 rounded-2xl border border-slate-100 shadow-sm; }
-        .scroll-area { height: 600px; overflow-y: auto; }
-        
-        @media print {
-            body * { visibility: hidden; }
-            #printable-analysis, #printable-analysis * { visibility: visible; }
-            #printable-analysis { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
-            .no-print { display: none !important; }
-            .print-bg-white { background-color: white !important; border: none !important; box-shadow: none !important; }
-        }
-    </style>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>
+RADAR 4.0 | Lõimitud noortepoliitika ja mainekujunduse seire
+</title>
+
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+
+<style>
+
+body {
+    font-family: 'Inter', sans-serif;
+    background:#f8fafc;
+}
+
+
+.sidebar-link {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 16px;
+    border-radius:10px;
+    color:#475569;
+    font-weight:500;
+    transition:.2s;
+}
+
+
+.sidebar-link:hover {
+    background:#eff6ff;
+    color:#2563eb;
+}
+
+
+.sidebar-link.active {
+    background:#2563eb;
+    color:white;
+    box-shadow:0 10px 20px rgba(37,99,235,.15);
+}
+
+
+.kpi-card {
+
+    background:white;
+    padding:24px;
+    border-radius:18px;
+    border:1px solid #e2e8f0;
+    box-shadow:0 2px 5px rgba(0,0,0,.03);
+
+}
+
+
+.scroll-area {
+
+    height:600px;
+    overflow-y:auto;
+
+}
+
+
+
+@media print {
+
+body * {
+    visibility:hidden;
+}
+
+
+#printable-analysis,
+#printable-analysis * {
+
+    visibility:visible;
+
+}
+
+
+#printable-analysis {
+
+    position:absolute;
+    left:0;
+    top:0;
+    width:100%;
+    padding:20px;
+
+}
+
+
+.no-print {
+
+    display:none!important;
+
+}
+
+
+}
+
+
+</style>
+
 </head>
+
+
+
 <body class="flex min-h-screen">
 
-    <aside class="w-72 bg-white border-r border-slate-100 p-6 flex flex-col">
-        <div class="mb-10 px-4">
-            <h1 class="text-2xl font-bold text-slate-900">RADAR <span class="text-blue-600">3.4</span></h1>
-            <p class="text-slate-400 text-xs mt-1 uppercase tracking-widest">Strateegiline Seire</p>
-        </div>
-        
-        <nav class="flex flex-col gap-2 flex-1">
-            <button onclick="switchView('view-main')" class="sidebar-link active" id="nav-main">📊 Töölaud</button>
-            <button onclick="switchView('view-history')" class="sidebar-link" id="nav-history">📜 Arhiiv</button>
-            <button onclick="switchView('view-settings')" class="sidebar-link" id="nav-settings">⚙️ Seaded</button>
-        </nav>
-    </aside>
 
-    <main class="flex-1 p-10">
-        <!-- Dashboardi KPI-d -->
-        <div id="kpi-container">
-            <header class="flex justify-between items-center mb-10">
-                <h2 class="text-3xl font-bold text-slate-900">Tere tulemast, Peaekspert</h2>
-            </header>
-            
-            <div class="grid grid-cols-4 gap-6 mb-10">
-                <div class="kpi-card">
-                    <p class="text-slate-400 text-[10px] uppercase font-bold">Allikaid</p>
-                    <h4 id="kpi-sources" class="text-2xl font-bold">-</h4>
-                    <p class="text-[10px] text-slate-500 mt-2">Jälgitavate veebiportaalide arv, mida süsteem automaatselt skaneerib.</p>
-                </div>
-                <div class="kpi-card">
-                    <p class="text-slate-400 text-[10px] uppercase font-bold">Uudiseid</p>
-                    <h4 id="kpi-news" class="text-2xl font-bold">-</h4>
-                    <p class="text-[10px] text-slate-500 mt-2">Täna andmebaasi lisatud uued artiklid, mida süsteem on analüüsinud.</p>
-                </div>
-                <div class="kpi-card">
-                    <p class="text-slate-400 text-[10px] uppercase font-bold">Raport</p>
-                    <h4 id="kpi-report" class="text-2xl font-bold">-</h4>
-                    <p class="text-[10px] text-slate-500 mt-2">Viimase AI-põhise trendianalüüsi teostamise aeg.</p>
-                </div>
-                <div class="kpi-card">
-                    <p class="text-slate-400 text-[10px] uppercase font-bold">Maine</p>
-                    <h4 id="kpi-reputation" class="text-2xl font-bold text-blue-600">-</h4>
-                    <p class="text-[10px] text-slate-500 mt-2">Viimase 100 artikli keskmine hindamine (inimkesksus, arusaadavus, aktiivsus).</p>
-                </div>
-            </div>
-        </div>
 
-        <!-- Vaated -->
-        <div id="view-main" class="grid grid-cols-12 gap-8">
-            <div class="col-span-4">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Viimased sündmused</h3>
-                <div id="recent-texts-container" class="scroll-area space-y-3 pr-2">Laadin...</div>
-            </div>
-            <div class="col-span-8">
-                <div class="space-y-4">
-                    <select id="ai-preset-prompt" class="w-full bg-white border border-slate-200 p-4 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Vali eelvormistatud analüüs (vabatahtlik) --</option>
-                        <option value="Mainekujunduse audit: Hinda viimaste uudiste pealkirju mainekujunduslikust aspektist. Kas need on positiivsed, negatiivsed või neutraalsed? Kas need loovad head kuvandit?">Mainekujunduse audit</option>
-                        <option value="Valdkondade lõimituse raport: Analüüsi viimaseid uudiseid ja otsi märke erinevate valdkondade (haridus, noorsootöö, poliitika) koostööst või selle puudumisest.">Valdkondade lõimituse raport</option>
-                    </select>
-                    
-                    <textarea id="ai-custom-prompt" class="w-full p-4 bg-white rounded-xl border border-slate-200 h-32" placeholder="Kirjelda oma strateegilist fookust..."></textarea>
-                    
-                    <button onclick="generateReport()" id="gen-btn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition relative">
-                        <span id="btn-text">Käivita analüüs</span>
-                        <!-- Lihtne CSS laadimise indikaator nupu sees -->
-                        <div id="btn-loader" class="hidden absolute inset-0 flex items-center justify-center">
-                             <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        </div>
-                    </button>
-                </div>
-                
-                <!-- See on konteiner, kuhu paneme ilusa tulemuse ja nupud -->
-                <div id="ai-insight-content" class="mt-8"></div>
-            </div>
-        </div>
+<!-- SIDEBAR -->
 
-        <div id="view-history" class="hidden">
-            <h2 class="text-2xl font-bold mb-6">Analüüside Arhiiv</h2>
-            <div id="history-container" class="grid grid-cols-1 gap-4"></div>
-        </div>
+<aside class="w-72 bg-white border-r border-slate-200 p-6 flex flex-col">
 
-        <div id="view-settings" class="hidden">
-            <h2 class="text-2xl font-bold mb-6">Seaded</h2>
-            <p class="text-slate-500">Süsteemi konfiguratsioon on peagi saadaval.</p>
-        </div>
-    </main>
 
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwU1_EhiDmRyrUscZ-8BLy2RxDeWdO2m46Eme4h-nPn9e64vo7abR6xUfLT3QV1TLDEiw/exec";
+<div class="mb-10 px-4">
 
-        function switchView(viewId) {
-            document.getElementById('view-main').classList.add('hidden');
-            document.getElementById('view-history').classList.add('hidden');
-            document.getElementById('view-settings').classList.add('hidden');
-            document.getElementById('kpi-container').classList.toggle('hidden', viewId !== 'view-main');
-            
-            document.getElementById(viewId).classList.remove('hidden');
-            
-            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            document.getElementById('nav-' + viewId.split('-')[1]).classList.add('active');
-        }
 
-        async function generateReport() {
-            const btn = document.getElementById('gen-btn');
-            const btnText = document.getElementById('btn-text');
-            const btnLoader = document.getElementById('btn-loader');
-            const outputArea = document.getElementById('ai-insight-content');
-            
-            const presetPrompt = document.getElementById('ai-preset-prompt').value;
-            const customPrompt = document.getElementById('ai-custom-prompt').value;
-            const finalPrompt = customPrompt.trim() !== "" ? customPrompt : presetPrompt;
+<h1 class="text-2xl font-bold text-slate-900">
 
-            if (finalPrompt.trim() === "") {
-                alert("Palun vali analüüsi teema või kirjuta oma küsimus!");
-                return;
-            }
+RADAR <span class="text-blue-600">4.0</span>
 
-            btn.disabled = true;
-            btnText.classList.add('hidden');
-            btnLoader.classList.remove('hidden');
-            outputArea.innerHTML = '<div class="p-6 bg-blue-50 text-blue-600 rounded-xl flex items-center gap-3"><div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>Analüüsin ja koostan graafikuid, palun oota...</div>';
+</h1>
 
-            try {
-                const res = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'generate', customPrompt: finalPrompt }),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                });
-                
-                const result = await res.json();
-                
-                let analysisHtml = '';
-                try {
-                    const parsedData = typeof result.insight === 'string' ? JSON.parse(result.insight) : result.insight;
-                    if (parsedData && typeof parsedData === 'object') {
-                         for (const [key, value] of Object.entries(parsedData)) {
-                             let badgeClass = "bg-blue-100 text-blue-700";
-                             if(value.hinnang) {
-                                 const h = value.hinnang.toLowerCase();
-                                 if (h.includes('positiiv')) badgeClass = "bg-green-100 text-green-700";
-                                 if (h.includes('negatiiv') || h.includes('oht')) badgeClass = "bg-red-100 text-red-700";
-                             }
-                             analysisHtml += `
-                                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-4 print-bg-white">
-                                    <h3 class="text-lg font-bold text-slate-900 mb-2">${key}</h3>
-                                    <p class="text-slate-600 text-sm leading-relaxed mb-4">${value.analüüs || value.analuus || ''}</p>
-                                    ${value.hinnang ? `<div class="inline-block ${badgeClass} text-[10px] font-bold px-3 py-1 rounded-full uppercase">${value.hinnang}</div>` : ''}
-                                </div>
-                             `;
-                         }
-                    } else { throw new Error("Mitte-standardne JSON"); }
-                } catch (e) {
-                    analysisHtml = `<div class="prose prose-slate max-w-none text-sm text-slate-700 whitespace-pre-wrap">${result.insight || 'Viga: AI ei tagastanud analüüsi.'}</div>`;
-                }
 
-                let visualStatsHtml = '';
-                if (result.articles && result.articles.length > 0) {
-                    // Allikate kokkulugemine
-                    let sourceCounts = {};
-                    result.articles.forEach(art => {
-                        sourceCounts[art.source] = (sourceCounts[art.source] || 0) + 1;
-                    });
-                    
-                    // Tulpgraafiku HTMLi koostamine
-                    let barsHtml = Object.entries(sourceCounts).map(([src, count]) => {
-                        let pct = Math.round((count / result.articles.length) * 100);
-                        return `
-                        <div class="mb-2">
-                            <div class="flex justify-between text-[10px] font-bold uppercase text-slate-500 mb-1">
-                                <span>${src}</span>
-                                <span>${count} art (${pct}%)</span>
-                            </div>
-                            <div class="w-full bg-slate-200 rounded-full h-1.5">
-                                <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
-                            </div>
-                        </div>`;
-                    }).join('');
+<p class="text-slate-400 text-xs mt-2 uppercase tracking-widest">
 
-                    // Artiklite nimekirja koostamine
-                    let articlesListHtml = result.articles.map(art => 
-                        `<li class="mb-1"><span class="text-slate-400 font-bold w-16 inline-block">${art.source}</span> ${art.title}</li>`
-                    ).join('');
+Lõimitud noortepoliitika ja mainekujunduse seire
 
-                    visualStatsHtml = `
-                        <div class="bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100 print-bg-white">
-                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Analüüsi Alusandmed</h3>
-                            
-                            <div class="flex gap-8 mb-6">
-                                <!-- Ringikujuline mõõdik -->
-                                <div class="flex flex-col items-center justify-center bg-white w-24 h-24 rounded-full shadow-sm border-4 border-blue-500 shrink-0">
-                                    <span class="text-2xl font-bold text-slate-900 leading-none">${result.articles.length}</span>
-                                    <span class="text-[9px] uppercase font-bold text-slate-400 mt-1">Uudist</span>
-                                </div>
-                                
-                                <!-- Allikate jaotus (Graafikud) -->
-                                <div class="flex-1">
-                                    ${barsHtml}
-                                </div>
-                            </div>
-                            
-                            <!-- Väike nimekiri kaasatud lugudest -->
-                            <div class="mt-4 border-t border-slate-200 pt-4">
-                                <p class="text-[10px] uppercase font-bold text-slate-400 mb-2">Kaasatud sündmused:</p>
-                                <ul class="text-[11px] text-slate-500 leading-relaxed list-none m-0 p-0 h-24 overflow-y-auto">
-                                    ${articlesListHtml}
-                                </ul>
-                            </div>
-                        </div>
-                    `;
-                }
+</p>
 
-                outputArea.innerHTML = `
-                    <div class="mb-6 flex justify-between items-center no-print">
-                        <h4 class="font-bold text-slate-900 text-xl">Analüüsi tulemus</h4>
-                        <div class="flex gap-2">
-                            <button onclick="sendAnalysisEmail()" class="text-xs font-bold px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">Saada meilile</button>
-                            <button onclick="window.print()" class="text-xs font-bold px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition">Salvesta PDF</button>
-                        </div>
-                    </div>
-                    <div id="printable-analysis">
-                        ${visualStatsHtml}
-                        ${analysisHtml}
-                    </div>
-                `;
-            } catch (error) {
-                outputArea.innerHTML = `<div class="p-6 bg-red-50 text-red-600 rounded-xl">Viga andmete pärimisel: ${error.message}</div>`;
-            } finally {
-                btn.disabled = false;
-                btnText.classList.remove('hidden');
-                btnLoader.classList.add('hidden');
-            }
-        }
 
-        // --- UUS FUNKTSIOON: Meili saatmine otse veebist ---
-        async function sendAnalysisEmail() {
-            const content = document.getElementById('printable-analysis').innerHTML;
-            if(!content) return;
-            
-            alert("Saadan raportit meilile...");
-            
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'sendEmail',
-                        content: `
-                            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                                <h2 style="color: #1e293b;">Strateegiline Analüüs (RADAR 3.4)</h2>
-                                ${content}
-                            </div>
-                        `
-                    }),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                });
-                alert("Raport on edukalt Sinu postkasti saadetud!");
-            } catch (e) {
-                alert("Viga saatmisel. Proovi uuesti.");
-            }
-        }
+</div>
 
-        async function fetchData() {
-            const res = await fetch(SCRIPT_URL);
-            const data = await res.json();
-            
-            // KPI väärtuste uuendamine otse andmebaasist
-            if(data.kpi) {
-                document.getElementById('kpi-sources').innerText = data.kpi.sources;
-                document.getElementById('kpi-news').innerText = data.kpi.newsToday;
-                document.getElementById('kpi-report').innerText = data.kpi.lastReport;
-                document.getElementById('kpi-reputation').innerText = data.kpi.reputation;
-            }
 
-            document.getElementById('recent-texts-container').innerHTML = data.news.map(n => `
-                <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                    <a href="${n.link}" target="_blank" class="font-semibold text-sm block mb-1 hover:text-blue-600">${n.title}</a>
-                    <div class="text-[10px] text-slate-400 uppercase font-bold">${n.source} | ${n.date}</div>
-                </div>`).join('');
-            document.getElementById('history-container').innerHTML = data.history.map(h => `
-                <div class="bg-white p-6 rounded-2xl border border-slate-100">
-                    <div class="text-xs text-slate-400 font-bold mb-2">${h.date}</div>
-                    <div class="text-sm text-slate-700">${h.content}</div>
-                </div>`).join('');
-        }
-        
-        window.onload = fetchData;
-    </script>
+
+<nav class="flex flex-col gap-2 flex-1">
+
+
+<button 
+onclick="switchView('view-main')" 
+id="nav-main"
+class="sidebar-link active">
+
+📊 Töölaud
+
+</button>
+
+
+
+<button 
+onclick="switchView('view-history')" 
+id="nav-history"
+class="sidebar-link">
+
+📜 Analüüside arhiiv
+
+</button>
+
+
+
+<button 
+onclick="switchView('view-settings')" 
+id="nav-settings"
+class="sidebar-link">
+
+⚙️ Seaded
+
+</button>
+
+
+</nav>
+
+
+<div class="px-4 text-xs text-slate-400">
+
+Peaeksperdi strateegiline assistent
+
+</div>
+
+
+</aside>
+
+
+
+
+
+<!-- MAIN -->
+
+
+<main class="flex-1 p-10">
+
+
+
+
+
+<!-- HEADER + KPI -->
+
+
+<div id="kpi-container">
+
+
+<header class="mb-10">
+
+
+<h2 class="text-3xl font-bold text-slate-900">
+
+Tere tulemast, Peaekspert
+
+</h2>
+
+
+<p class="text-slate-500 mt-2">
+
+Strateegiline vaade lõimitud noortepoliitika ja mainekujunduse nähtavusele.
+
+</p>
+
+
+</header>
+
+
+
+
+
+<div class="grid grid-cols-4 gap-6 mb-10">
+
+
+
+<div class="kpi-card">
+
+<p class="text-xs uppercase font-bold text-slate-400">
+
+Allikaid
+
+</p>
+
+
+<h4 id="kpi-sources"
+class="text-3xl font-bold mt-2">
+
+-
+
+</h4>
+
+
+<p class="text-xs text-slate-500 mt-3">
+
+Jälgitavad infoallikad
+
+</p>
+
+
+</div>
+
+
+
+
+<div class="kpi-card">
+
+<p class="text-xs uppercase font-bold text-slate-400">
+
+Uudiseid
+
+</p>
+
+
+<h4 id="kpi-news"
+class="text-3xl font-bold mt-2">
+
+-
+
+</h4>
+
+
+<p class="text-xs text-slate-500 mt-3">
+
+Analüüsitud artiklid
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="kpi-card">
+
+<p class="text-xs uppercase font-bold text-slate-400">
+
+Noortepoliitika nähtavus
+
+</p>
+
+
+<h4 id="kpi-youth"
+class="text-3xl font-bold mt-2 text-blue-600">
+
+-
+
+</h4>
+
+
+<p class="text-xs text-slate-500 mt-3">
+
+Lõimitud vaate esinemine
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="kpi-card">
+
+<p class="text-xs uppercase font-bold text-slate-400">
+
+Väärtusloome
+
+</p>
+
+
+<h4 id="kpi-value"
+class="text-3xl font-bold mt-2 text-blue-600">
+
+-
+
+</h4>
+
+
+<p class="text-xs text-slate-500 mt-3">
+
+Avaliku väärtuse nähtavus
+
+</p>
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- PÕHIVAADE -->
+
+
+<div id="view-main"
+class="grid grid-cols-12 gap-8">
+
+
+
+
+
+<!-- UUDISED -->
+
+
+<div class="col-span-4">
+
+
+<h3 class="text-xs uppercase font-bold text-slate-400 tracking-widest mb-4">
+
+Viimased sündmused
+
+</h3>
+
+
+
+<div id="recent-texts-container"
+class="scroll-area space-y-3">
+
+Laadin...
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+<!-- AI ANALÜÜS -->
+
+
+<div class="col-span-8">
+
+
+
+<select 
+id="ai-preset-prompt"
+class="w-full bg-white border border-slate-200 p-4 rounded-xl mb-4">
+
+
+<option value="">
+
+-- Vali analüüs --
+
+</option>
+
+
+
+<option value="Analüüsi viimaseid uudiseid lõimitud noortepoliitika vaates. Leia, millised noori mõjutavad valdkonnad on nähtavad ja millised seosed puuduvad.">
+
+Lõimitud noortepoliitika analüüs
+
+</option>
+
+
+
+<option value="Analüüsi pealkirju ja juhtlauseid mainekujunduse ning avaliku väärtuse loomise vaates. Paku paremaid sõnastusi, kui väärtuslugu ei ole nähtav.">
+
+Mainekujunduse ja sõnumi audit
+
+</option>
+
+
+
+<option value="Koosta peaeksperdile strateegiline ülevaade viimaste uudiste põhjal. Leia korduvad mustrid noortepoliitika ja mainekujunduse vaates.">
+
+Strateegiline juhtimisraport
+
+</option>
+
+
+
+</select>
+
+
+
+
+
+<textarea
+
+id="ai-custom-prompt"
+
+class="w-full h-32 p-4 bg-white border border-slate-200 rounded-xl"
+
+placeholder="Lisa oma strateegiline küsimus..."
+
+></textarea>
+
+
+
+
+
+<button
+
+onclick="generateReport()"
+
+id="gen-btn"
+
+class="w-full bg-slate-900 text-white py-4 rounded-xl mt-4 font-bold">
+
+<span id="btn-text">
+
+Käivita analüüs
+
+</span>
+
+
+<div id="btn-loader"
+class="hidden">
+
+Analüüsin...
+
+</div>
+
+
+</button>
+
+
+
+
+
+<div id="ai-insight-content"
+class="mt-8">
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+<!-- ARHIIV -->
+
+
+<div id="view-history"
+class="hidden">
+
+
+<h2 class="text-2xl font-bold mb-6">
+
+Analüüside arhiiv
+
+</h2>
+
+
+<div id="history-container">
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- SEADED -->
+
+
+<div id="view-settings"
+class="hidden">
+
+
+<h2 class="text-2xl font-bold">
+
+Seaded
+
+</h2>
+
+
+<p class="text-slate-500 mt-4">
+
+RADAR süsteemi konfiguratsioon
+
+</p>
+
+
+</div>
+
+
+
+
+<script>
+
+
+const SCRIPT_URL = "SIIN_ON_SINU_APPS_SCRIPT_WEB_APP_URL";
+
+
+
+
+// ==============================
+// VAATE VAHETUS
+// ==============================
+
+function switchView(viewId){
+
+
+document.getElementById("view-main").classList.add("hidden");
+document.getElementById("view-history").classList.add("hidden");
+document.getElementById("view-settings").classList.add("hidden");
+
+
+document.getElementById(viewId).classList.remove("hidden");
+
+
+document.getElementById("kpi-container")
+.classList.toggle("hidden", viewId !== "view-main");
+
+
+
+document.querySelectorAll(".sidebar-link")
+.forEach(btn=>{
+    btn.classList.remove("active");
+});
+
+
+document
+.getElementById("nav-"+viewId.split("-")[1])
+.classList.add("active");
+
+
+}
+
+
+
+
+
+
+// ==============================
+// AI ANALÜÜSI KÄIVITUS
+// ==============================
+
+
+async function generateReport(){
+
+
+const button=document.getElementById("gen-btn");
+const loader=document.getElementById("btn-loader");
+const text=document.getElementById("btn-text");
+
+const output=document.getElementById("ai-insight-content");
+
+
+
+const preset =
+document.getElementById("ai-preset-prompt").value;
+
+
+const custom =
+document.getElementById("ai-custom-prompt").value;
+
+
+
+const prompt =
+custom.trim() !== ""
+?
+custom
+:
+preset;
+
+
+
+if(prompt.trim()===""){
+
+alert("Vali analüüsi teema või sisesta küsimus.");
+
+return;
+
+}
+
+
+
+button.disabled=true;
+
+text.classList.add("hidden");
+
+loader.classList.remove("hidden");
+
+
+
+output.innerHTML=`
+
+<div class="bg-blue-50 text-blue-700 p-6 rounded-xl">
+
+Analüüsin uudiseid ja koostan strateegilist ülevaadet...
+
+</div>
+
+`;
+
+
+
+try{
+
+
+const response = await fetch(
+SCRIPT_URL,
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":
+"text/plain;charset=utf-8"
+},
+
+
+body:JSON.stringify({
+
+action:"generate",
+
+customPrompt:prompt
+
+})
+
+
+});
+
+
+
+const result = await response.json();
+
+
+
+
+let data =
+typeof result.insight === "string"
+?
+JSON.parse(result.insight)
+:
+result.insight;
+
+
+
+
+let html="";
+
+
+
+
+
+// ==============================
+// ARTIKLIPÕHISED ANALÜÜSID
+// ==============================
+
+
+if(data.articles){
+
+
+
+html += `
+
+<h2 class="text-xl font-bold mb-5">
+
+Artiklipõhised analüüsid
+
+</h2>
+
+`;
+
+
+
+
+data.articles.forEach(article=>{
+
+
+html += `
+
+
+<div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6">
+
+
+<div class="text-xs uppercase font-bold text-slate-400 mb-2">
+
+${article.source}
+
+</div>
+
+
+
+<h3 class="text-lg font-bold text-slate-900 mb-5">
+
+${article.title}
+
+</h3>
+
+
+
+<div class="text-sm text-slate-700 leading-relaxed">
+
+${article.analysis}
+
+</div>
+
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+}
+
+
+
+
+
+// ==============================
+// KOONDANALÜÜS
+// ==============================
+
+
+
+if(data.summary){
+
+
+
+html += `
+
+
+<div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 mt-8">
+
+
+<h2 class="text-xl font-bold text-slate-900 mb-5">
+
+Strateegiline koondanalüüs
+
+</h2>
+
+
+
+<div class="text-sm text-slate-700 leading-relaxed">
+
+${data.summary}
+
+</div>
+
+
+
+</div>
+
+
+
+`;
+
+
+
+}
+
+
+
+
+output.innerHTML=`
+
+<div class="flex justify-between items-center mb-6 no-print">
+
+
+<h2 class="text-xl font-bold">
+
+Analüüsi tulemus
+
+</h2>
+
+
+
+<div class="flex gap-2">
+
+
+<button
+
+onclick="sendAnalysisEmail()"
+
+class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-bold">
+
+Saada meilile
+
+</button>
+
+
+
+
+<button
+
+onclick="window.print()"
+
+class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold">
+
+PDF
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div id="printable-analysis">
+
+
+${html}
+
+
+</div>
+
+
+`;
+
+
+
+}
+
+catch(error){
+
+
+output.innerHTML=`
+
+<div class="bg-red-50 text-red-700 p-6 rounded-xl">
+
+Viga:
+${error.message}
+
+</div>
+
+`;
+
+
+
+}
+
+finally{
+
+
+button.disabled=false;
+
+text.classList.remove("hidden");
+
+loader.classList.add("hidden");
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+// ==============================
+// RAPORTI SAATMINE EMAILIGA
+// ==============================
+
+
+async function sendAnalysisEmail(){
+
+
+const content =
+document.getElementById(
+"printable-analysis"
+).innerHTML;
+
+
+
+try{
+
+
+await fetch(
+SCRIPT_URL,
+{
+
+
+method:"POST",
+
+headers:{
+"Content-Type":
+"text/plain;charset=utf-8"
+},
+
+
+body:JSON.stringify({
+
+action:"sendEmail",
+
+content:
+`
+
+<div style="font-family:Arial">
+
+<h2>
+RADAR 4.0 strateegiline analüüs
+</h2>
+
+${content}
+
+</div>
+
+`
+
+})
+
+
+});
+
+
+alert(
+"Raport saadeti edukalt."
+);
+
+
+}
+
+catch(error){
+
+alert(
+"Raporti saatmine ebaõnnestus."
+);
+
+
+}
+
+
+}
+
+
+
+
+
+
+
+
+// ==============================
+// ANDMETE LAADIMINE
+// ==============================
+
+
+async function fetchData(){
+
+
+try{
+
+
+const response =
+await fetch(SCRIPT_URL);
+
+
+
+const data =
+await response.json();
+
+
+
+
+
+if(data.kpi){
+
+
+document.getElementById("kpi-sources")
+.innerText=data.kpi.sources || "-";
+
+
+document.getElementById("kpi-news")
+.innerText=data.kpi.newsToday || "-";
+
+
+document.getElementById("kpi-youth")
+.innerText=data.kpi.youthVisibility || "-";
+
+
+document.getElementById("kpi-value")
+.innerText=data.kpi.valueCreation || "-";
+
+
+}
+
+
+
+
+
+if(data.news){
+
+
+document.getElementById(
+"recent-texts-container"
+)
+.innerHTML =
+data.news.map(n=>`
+
+
+<div class="bg-white p-4 rounded-xl border border-slate-100">
+
+
+<a href="${n.link}"
+
+target="_blank"
+
+class="font-semibold text-sm hover:text-blue-600">
+
+${n.title}
+
+</a>
+
+
+
+<div class="text-xs text-slate-400 mt-2">
+
+${n.source} | ${n.date}
+
+</div>
+
+
+
+</div>
+
+
+`).join("");
+
+
+}
+
+
+
+
+if(data.history){
+
+
+document.getElementById(
+"history-container"
+)
+.innerHTML =
+data.history.map(h=>`
+
+
+<div class="bg-white p-6 rounded-xl mb-4 border">
+
+
+<div class="text-xs text-slate-400 mb-2">
+
+${h.date}
+
+</div>
+
+
+<div>
+
+${h.content}
+
+</div>
+
+
+</div>
+
+
+`).join("");
+
+
+}
+
+
+
+}
+
+catch(e){
+
+console.log(e);
+
+}
+
+
+
+}
+
+
+
+
+window.onload=fetchData;
+
+
+</script>
+
+
 </body>
+
 </html>
